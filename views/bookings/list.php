@@ -26,8 +26,8 @@ $bookings = $bookingModel->getAllBookings($where);
              <th>ฝ่าย</th>
             <th>เบอร์โทร</th>
             <th>จำนวนผู้เข้าใช้</th>
-            <th>เวลาเริ่ม</th>
-            <th>เวลาสิ้นสุด</th>
+            <th>วันที่เริ่ม</th>
+            <th>วันที่สิ้นสุด</th>
             <th>อุปกรณ์</th>
               <th>หมายเหตุ</th>
             <th>สถานะ</th>
