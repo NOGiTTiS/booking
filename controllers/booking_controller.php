@@ -62,9 +62,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $equipmentIds = isset($_POST['equipments']) ? $_POST['equipments'] : [];
         $note = $_POST['note'];
         $booking = $bookingModel->getBookingById($bookingId);
-
-        if ($booking['status'] !== 'pending') {
-            $_SESSION['error_message'] = "ไม่สามารถแก้ไขการจองได้เนื่องจากได้รับการอนุมัติหรือถูกปฏิเสธแล้ว";
+        if ($booking['status'] !== 'pending' || $booking['user_id'] !== $userId) {
+            $_SESSION['error_message'] = "ไม่สามารถแก้ไขการจองได้เนื่องจากได้รับการอนุมัติหรือถูกปฏิเสธแล้ว หรือไม่ใช่รายการจองของคุณ";
             header("Location: ../views/bookings/edit.php?id=$bookingId");
             exit();
         }
@@ -90,7 +89,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: ../views/bookings/edit.php?id=$bookingId");
             exit();
         }
-
     }
 
 } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
