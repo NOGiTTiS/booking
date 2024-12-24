@@ -22,7 +22,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     </div>
      <div class="mb-3">
          <label for="color" class="form-label">สี</label>
-         <input type="color" class="form-control" id="color" name="color" value="<?php echo $this->getRandomColor(); ?>">
+         <input type="color" class="form-control" id="color" name="color" value="">
     </div>
     <button type="submit" class="btn btn-primary" name="create">เพิ่มห้องประชุม</button>
 </form>

@@ -15,7 +15,10 @@
      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css" />
      <style>
        .navbar-brand img {
-         max-height: 35px; /* Adjust the height of the logo as needed */
+          max-height: 35px; /* Adjust the height of the logo as needed */
+          border-radius: 50%; /* Make logo round */
+          background-color: #fff; /* Set background color to white */
+          padding: 3px; /* Add padding around logo */
        }
 
          .navbar-dark .navbar-nav .nav-link {
@@ -33,8 +36,8 @@
 
   <nav class="navbar navbar-expand-lg navbar-dark " style="background-color: #FF69B4;">
       <div class="container">
-        <a class="navbar-brand" href="/meeting_room_booking/index.php">
-          <img src="/meeting_room_booking/assets/img/logo.png" alt="Logo"  class="d-inline-block align-top me-2">
+        <a class="navbar-brand" href="/index.php">
+          <img src="/assets/img/logo.png" alt="Logo"  class="d-inline-block align-top me-2">
           ระบบจองห้องประชุม
           </a>
          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,26 +46,26 @@
          <div class="collapse navbar-collapse" id="navbarNav">
               <ul class="navbar-nav ms-auto">
                  <?php if (isset($_SESSION['user_id'])): ?>
-                     <li class="nav-item"><a class="nav-link" href="/meeting_room_booking/index.php">หน้าแรก</a></li>
-                     <li class="nav-item"><a class="nav-link" href="/meeting_room_booking/views/bookings/list.php">รายการจอง</a></li>
+                     <li class="nav-item"><a class="nav-link" href="/index.php">หน้าแรก</a></li>
+                     <li class="nav-item"><a class="nav-link" href="/views/bookings/list.php">รายการจอง</a></li>
                     <?php if ($_SESSION['role'] === 'admin'): ?>
-                         <li class="nav-item"><a class="nav-link" href="/meeting_room_booking/views/rooms/list.php">ห้องประชุม</a></li>
-                         <li class="nav-item"><a class="nav-link" href="/meeting_room_booking/views/equipments/list.php">อุปกรณ์</a></li>
-                          <li class="nav-item"><a class="nav-link" href="/meeting_room_booking/views/admin/dashboard.php">แดชบอร์ด</a></li>
+                         <li class="nav-item"><a class="nav-link" href="/views/rooms/list.php">ห้องประชุม</a></li>
+                         <li class="nav-item"><a class="nav-link" href="/views/equipments/list.php">อุปกรณ์</a></li>
+                          <li class="nav-item"><a class="nav-link" href="/views/admin/dashboard.php">แดชบอร์ด</a></li>
                           <li class="nav-item dropdown">
                                <a class="nav-link dropdown-toggle" href="#" id="reportDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                    รายงาน
                                </a>
                                <ul class="dropdown-menu" aria-labelledby="reportDropdown">
-                                    <li><a class="dropdown-item" href="/meeting_room_booking/views/reports/booking_report.php">รายงานห้องประชุม</a></li>
-                                    <li><a class="dropdown-item" href="/meeting_room_booking/views/reports/user_booking_report.php">รายงานผู้ใช้งาน</a></li>
+                                    <li><a class="dropdown-item" href="/views/reports/booking_report.php">รายงานห้องประชุม</a></li>
+                                    <li><a class="dropdown-item" href="/views/reports/user_booking_report.php">รายงานผู้ใช้งาน</a></li>
                                 </ul>
                          </li>
                       <?php endif;?>
-                     <li class="nav-item"><a class="nav-link" href="/meeting_room_booking/controllers/auth_controller.php?logout=true">ออกจากระบบ</a></li>
+                     <li class="nav-item"><a class="nav-link" href="/controllers/auth_controller.php?logout=true">ออกจากระบบ</a></li>
                  <?php else: ?>
-                      <li class="nav-item"><a class="nav-link" href="/meeting_room_booking/views/auth/login.php">เข้าสู่ระบบ</a></li>
-                      <li class="nav-item"><a class="nav-link" href="/meeting_room_booking/views/auth/register.php">สมัครสมาชิก</a></li>
+                      <li class="nav-item"><a class="nav-link" href="/views/auth/login.php">เข้าสู่ระบบ</a></li>
+                      <li class="nav-item"><a class="nav-link" href="/views/auth/register.php">สมัครสมาชิก</a></li>
                  <?php endif;?>
              </ul>
          </div>

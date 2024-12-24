@@ -25,7 +25,7 @@ $equipments = $equipmentModel->getAllEquipments();
         <input type="text" class="form-control" id="subject" name="subject" required>
     </div>
     <div class="mb-3">
-        <label for="department" class="form-label">ฝ่าย/งานที่ขอใช้งาน</label>
+        <label for="department" class="form-label">ฝ่าย/งาน</label>
         <input type="text" class="form-control" id="department" name="department" required>
     </div>
     <div class="mb-3">

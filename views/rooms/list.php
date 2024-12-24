@@ -21,6 +21,7 @@ $rooms = $roomModel->getAllRooms();
             <th>ชื่อห้อง</th>
             <th>ความจุ</th>
             <th>รายละเอียด</th>
+            <th>สี</th>
             <th>จัดการ</th>
         </tr>
     </thead>
@@ -30,6 +31,8 @@ $rooms = $roomModel->getAllRooms();
                 <td><?php echo $room['name']; ?></td>
                 <td><?php echo $room['capacity']; ?></td>
                 <td><?php echo $room['description']; ?></td>
+                <td><?php echo $room['color']; ?><input type="color" class="form-control" id="color" name="color" value="<?php echo $room['color']; ?>"></td>
+
                 <td>
                     <a href="edit.php?id=<?php echo $room['id']; ?>" class="btn btn-sm btn-warning">แก้ไข</a>
                     <a href="../../controllers/room_controller.php?delete=<?php echo $room['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('คุณต้องการลบห้องประชุมนี้หรือไม่?')">ลบ</a>

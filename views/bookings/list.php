@@ -59,16 +59,16 @@ $bookings = $bookingModel->getAllBookings($where);
                  </td>
                  <td>
                       <?php if ($_SESSION['role'] === 'admin'): ?>
-                            <a href="/meeting_room_booking/views/bookings/edit.php?id=<?php echo $booking['id']; ?>" class="btn btn-sm btn-warning">แก้ไข</a>
+                            <a href="/views/bookings/edit.php?id=<?php echo $booking['id']; ?>" class="btn btn-sm btn-warning">แก้ไข</a>
                            <?php if ($_SESSION['role'] === 'admin' && $booking['status'] === 'pending'): ?>
-                                  <a href="/meeting_room_booking/controllers/booking_controller.php?approve=<?php echo $booking['id']; ?>" class="btn btn-sm btn-success">อนุมัติ</a>
-                                 <a href="/meeting_room_booking/controllers/booking_controller.php?reject=<?php echo $booking['id']; ?>" class="btn btn-sm btn-danger">ปฏิเสธ</a>
+                                  <a href="/controllers/booking_controller.php?approve=<?php echo $booking['id']; ?>" class="btn btn-sm btn-success">อนุมัติ</a>
+                                 <a href="/controllers/booking_controller.php?reject=<?php echo $booking['id']; ?>" class="btn btn-sm btn-danger">ปฏิเสธ</a>
                          <?php endif;?>
-                              <a href="/meeting_room_booking/controllers/booking_controller.php?delete=<?php echo $booking['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('คุณต้องการลบการจองนี้หรือไม่?')">ลบ</a>
+                              <a href="/controllers/booking_controller.php?delete=<?php echo $booking['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('คุณต้องการลบการจองนี้หรือไม่?')">ลบ</a>
                      <?php else: ?>
                          <?php if ($booking['user_id'] === $_SESSION['user_id']): ?>
-                             <a href="/meeting_room_booking/views/bookings/edit.php?id=<?php echo $booking['id']; ?>" class="btn btn-sm btn-warning">แก้ไข</a>
-                           <a href="/meeting_room_booking/controllers/booking_controller.php?delete=<?php echo $booking['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('คุณต้องการลบการจองนี้หรือไม่?')">ลบ</a>
+                             <a href="/views/bookings/edit.php?id=<?php echo $booking['id']; ?>" class="btn btn-sm btn-warning">แก้ไข</a>
+                           <a href="/controllers/booking_controller.php?delete=<?php echo $booking['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('คุณต้องการลบการจองนี้หรือไม่?')">ลบ</a>
                           <?php endif;?>
                     <?php endif;?>
                  </td>

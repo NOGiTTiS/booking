@@ -30,11 +30,11 @@ foreach ($bookings as $booking) {
     <div class="col-md-12">
         <?php if (isset($_SESSION['user_id'])): ?>
             <p>สวัสดี, <?php echo $_SESSION['username']; ?>!</p>
-            <a href="/meeting_room_booking/views/bookings/create.php" class="btn btn-primary mb-3">จองห้องประชุม</a>
+            <a href="/views/bookings/create.php" class="btn btn-primary mb-3">จองห้องประชุม</a>
         <?php else: ?>
             <p>กรุณาเข้าสู่ระบบเพื่อทำการจองห้องประชุม</p>
-              <a href="/meeting_room_booking/views/auth/login.php" class="btn btn-primary mb-3">เข้าสู่ระบบ</a>
-             <a href="/meeting_room_booking/views/auth/register.php" class="btn btn-primary mb-3">สมัครสมาชิก</a>
+              <a href="/views/auth/login.php" class="btn btn-primary mb-3">เข้าสู่ระบบ</a>
+             <a href="/views/auth/register.php" class="btn btn-primary mb-3">สมัครสมาชิก</a>
         <?php endif;?>
     </div>
 </div>
@@ -55,7 +55,7 @@ foreach ($bookings as $booking) {
                     eventClick: function(calEvent, jsEvent, view) {
                          var bookingId = calEvent.id;
                          $.ajax({
-                               url: '/meeting_room_booking/get_booking_details.php',
+                               url: '/get_booking_details.php',
                                type: 'GET',
                                data: { id: bookingId },
                               dataType: 'json',
@@ -69,7 +69,7 @@ foreach ($bookings as $booking) {
                                      '<p><strong>หัวข้อ:</strong> ' + data.subject + '</p>' +
                                        '<p><strong>ห้องประชุม:</strong> ' + data.room_name + '</p>' +
                                       '<p><strong>ผู้จอง:</strong> ' + data.user_first_name + ' ' + data.user_last_name + '</p>' +
-                                        '<p><strong>ฝ่าย:</strong> ' + data.department + '</p>' +
+                                        '<p><strong>ฝ่าย/งาน:</strong> ' + data.department + '</p>' +
                                        '<p><strong>เบอร์โทร:</strong> ' + data.phone + '</p>' +
                                         '<p><strong>จำนวนผู้เข้าใช้:</strong> ' + data.attendees + '</p>' +
                                        '<p><strong>วันที่เริ่ม:</strong> ' + moment(data.start_time).format('DD/MM/YYYY HH:mm') + '</p>' +
@@ -101,7 +101,7 @@ foreach ($bookings as $booking) {
            });
     </script>
    <div class="mt-3">
-        <strong>คำอธิบายสี:</strong><br>
+        <strong>คำอธิบาย:</strong><br>
         <?php foreach ($rooms as $room): ?>
            <span class="badge" style="background-color: <?php echo $room['color']; ?>"><?php echo $room['name']; ?></span>
          <?php endforeach;?>

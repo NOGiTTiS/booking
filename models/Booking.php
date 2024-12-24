@@ -28,6 +28,7 @@ class Booking
 
             // Commit transaction
             $this->pdo->commit();
+
             return $bookingId;
         } catch (PDOException $e) {
             // Rollback transaction if any error occurs
@@ -40,7 +41,7 @@ class Booking
     public function getBookingById($id)
     {
         $stmt = $this->pdo->prepare("
-             SELECT
+            SELECT
                 b.*,
                 u.first_name AS user_first_name,
                 u.last_name AS user_last_name,
@@ -48,12 +49,12 @@ class Booking
                 GROUP_CONCAT(e.name) AS equipment_names
             FROM bookings b
             INNER JOIN users u ON b.user_id = u.id
-           INNER JOIN rooms r ON b.room_id = r.id
+            INNER JOIN rooms r ON b.room_id = r.id
             LEFT JOIN booking_equipments be ON b.id = be.booking_id
             LEFT JOIN equipments e ON be.equipment_id = e.id
             WHERE b.id = ?
             GROUP BY b.id
-         ");
+        ");
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -78,8 +79,8 @@ class Booking
 
             // Commit transaction
             $this->pdo->commit();
-            return true;
 
+            return true;
         } catch (PDOException $e) {
             // Rollback transaction if any error occurs
             $this->pdo->rollBack();
@@ -87,12 +88,12 @@ class Booking
             return false;
         }
     }
+
     public function deleteBooking($id)
     {
         try {
             // Begin transaction to ensure atomicity
             $this->pdo->beginTransaction();
-
             // Delete booking equipments
             $stmt = $this->pdo->prepare("DELETE FROM booking_equipments WHERE booking_id = ?");
             $stmt->execute([$id]);
@@ -100,7 +101,6 @@ class Booking
             // Delete booking
             $stmt = $this->pdo->prepare("DELETE FROM bookings WHERE id = ?");
             $stmt->execute([$id]);
-
             // Commit transaction
             $this->pdo->commit();
             return true;
@@ -144,7 +144,79 @@ class Booking
         if (!empty($conditions)) {
             $sql .= " WHERE " . implode(" AND ", $conditions);
         }
-        $sql .= " GROUP BY b.id ORDER BY b.start_time ASC";
+        $sql .= " GROUP BY b.id ORDER BY b.start_time DESC";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getBookingSummaryByRoom($where = [])
+    {
+        $sql = "
+              SELECT
+                   r.name AS room_name,
+                  COUNT(b.room_id) AS booking_count,
+                 r.color AS room_color
+            FROM bookings b
+             INNER JOIN rooms r ON b.room_id = r.id
+               WHERE b.status = 'approved'
+        ";
+        $conditions = [];
+        $params = [];
+        foreach ($where as $key => $value) {
+            if (strpos($key, '>=') !== false) {
+                $conditions[] = str_replace('>=', '', $key) . " >= ?";
+                $params[] = $value;
+            } else if (strpos($key, '<=') !== false) {
+                $conditions[] = str_replace('<=', '', $key) . " <= ?";
+                $params[] = $value;
+            } else {
+                $conditions[] = "$key = ?";
+                $params[] = $value;
+            }
+        }
+        if (!empty($conditions)) {
+            $sql .= " AND " . implode(" AND ", $conditions);
+        }
+        $sql .= " GROUP BY r.id ORDER BY booking_count DESC";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    }
+    public function getBookingSummaryByUser($where = [])
+    {
+        $sql = "
+            SELECT
+                u.first_name AS user_first_name,
+                u.last_name AS user_last_name,
+                 COUNT(b.user_id) AS booking_count
+             FROM bookings b
+               INNER JOIN users u ON b.user_id = u.id
+                WHERE b.status = 'approved'
+          ";
+
+        $conditions = [];
+        $params = [];
+        foreach ($where as $key => $value) {
+            if (strpos($key, '>=') !== false) {
+                $conditions[] = str_replace('>=', '', $key) . " >= ?";
+                $params[] = $value;
+            } else if (strpos($key, '<=') !== false) {
+                $conditions[] = str_replace('<=', '', $key) . " <= ?";
+                $params[] = $value;
+            } else {
+                $conditions[] = "$key = ?";
+                $params[] = $value;
+            }
+        }
+        if (!empty($conditions)) {
+            $sql .= " AND " . implode(" AND ", $conditions);
+        }
+
+        $sql .= " GROUP BY u.id ORDER BY booking_count DESC";
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
@@ -162,33 +234,31 @@ class Booking
         $stmt = $this->pdo->prepare("UPDATE bookings SET status = 'rejected' WHERE id = ?");
         return $stmt->execute([$id]);
     }
-
     public function getAvailableRooms($startTime, $endTime)
     {
         $sql = "
-             SELECT id, name
-              FROM rooms
-                WHERE id NOT IN (
+            SELECT id, name
+            FROM rooms
+              WHERE id NOT IN (
                  SELECT room_id
                   FROM bookings
                    WHERE (start_time < :endTime AND end_time > :startTime) AND status = 'approved'
-                 )
-            ";
+               )
+        ";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':startTime' => $startTime, ':endTime' => $endTime]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
     public function checkBookingAvailability($roomId, $startTime, $endTime, $excludeBookingId = null)
     {
 
         $sql = "
-                SELECT COUNT(*) FROM bookings
-                WHERE room_id = :room_id
-                AND status = 'approved'
-                AND id != :exclude_booking_id
-                AND ((start_time < :end_time AND end_time > :start_time))
-           ";
+               SELECT COUNT(*) FROM bookings
+               WHERE room_id = :room_id
+               AND status = 'approved'
+               AND id != :exclude_booking_id
+               AND ((start_time < :end_time AND end_time > :start_time))
+            ";
 
         if ($excludeBookingId === null) {
             $sql = str_replace("AND id != :exclude_booking_id", "", $sql);

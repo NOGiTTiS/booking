@@ -129,7 +129,7 @@ display: block;
 
  <div class="login-container">
    <div class="icon-container">
-        <img src="/meeting_room_booking/assets/img/logo.png" alt="Logo">
+        <img src="/assets/img/logo.png" alt="Logo">
     </div>
    <div class="form-container">
        <h2>เข้าสู่ระบบ</h2>
@@ -151,7 +151,7 @@ display: block;
                    <a href="#">ลืมรหัสผ่าน?</a>
               </div>
                <div class="register-link">
-                   <a href="/meeting_room_booking/views/auth/register.php">ลงทะเบียน</a>
+                   <a href="/views/auth/register.php">ลงทะเบียน</a>
               </div>
          </form>
     </div>
