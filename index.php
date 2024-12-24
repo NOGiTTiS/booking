@@ -4,6 +4,7 @@ include 'views/layouts/header.php';
 require_once 'config/database.php';
 require_once 'models/Booking.php';
 require_once 'models/Room.php';
+require_once 'models/User.php';
 
 $bookingModel = new Booking($pdo);
 $roomModel = new Room($pdo);
@@ -24,18 +25,28 @@ foreach ($bookings as $booking) {
         'color' => isset($roomColors[$booking['room_id']]['color']) ? $roomColors[$booking['room_id']]['color'] : '#378006', // Default color if not found
     ];
 }
+
+$userModel = new User($pdo);
+$user = null;
+if (isset($_SESSION['user_id'])) {
+    $user = $userModel->getUserById($_SESSION['user_id']);
+}
 ?>
 
 <div class="row">
     <div class="col-md-12">
         <?php if (isset($_SESSION['user_id'])): ?>
-            <p>สวัสดี, <?php echo $_SESSION['username']; ?>!</p>
-            <a href="/views/bookings/create.php" class="btn btn-primary mb-3">จองห้องประชุม</a>
-        <?php else: ?>
+           <?php if ($user): ?>
+               <p>สวัสดี, <?php echo $user['first_name'] . ' ' . $user['last_name']; ?>!</p>
+           <?php else: ?>
+               <p>สวัสดี!</p>
+          <?php endif;?>
+           <a href="views/bookings/create.php" class="btn btn-primary mb-3">จองห้องประชุม</a>
+       <?php else: ?>
             <p>กรุณาเข้าสู่ระบบเพื่อทำการจองห้องประชุม</p>
-              <a href="/views/auth/login.php" class="btn btn-primary mb-3">เข้าสู่ระบบ</a>
-             <a href="/views/auth/register.php" class="btn btn-primary mb-3">สมัครสมาชิก</a>
-        <?php endif;?>
+            <a href="views/auth/login.php" class="btn btn-primary mb-3">เข้าสู่ระบบ</a>
+          <a href="views/auth/register.php" class="btn btn-primary mb-3">สมัครสมาชิก</a>
+      <?php endif;?>
     </div>
 </div>
 

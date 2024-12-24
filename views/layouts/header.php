@@ -8,11 +8,11 @@
      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
      <link rel="stylesheet" href="../assets/css/style.css">
      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css" />
-     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css" />
+     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
      <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
      <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.js"></script>
-     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css" />
+
      <style>
        .navbar-brand img {
           max-height: 35px; /* Adjust the height of the logo as needed */
@@ -21,16 +21,20 @@
           padding: 3px; /* Add padding around logo */
        }
 
-         .navbar-dark .navbar-nav .nav-link {
+       body {
+           display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            font-family: 'Prompt', sans-serif; /* Apply Prompt Font to body */
+        }
+
+       .navbar-dark .navbar-nav .nav-link {
             color: #000; /* เปลี่ยนสีข้อความเป็นสีดำ */
           }
          .navbar-brand {
             color: #000; /* เปลี่ยนสีชื่อแบรนด์เป็นสีดำ */
-        }
+       }
        </style>
-
-
-
  </head>
  <body>
 

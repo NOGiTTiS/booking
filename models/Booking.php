@@ -144,7 +144,7 @@ class Booking
         if (!empty($conditions)) {
             $sql .= " WHERE " . implode(" AND ", $conditions);
         }
-        $sql .= " GROUP BY b.id ORDER BY b.start_time DESC";
+        $sql .= " GROUP BY b.id ORDER BY b.id DESC";
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
