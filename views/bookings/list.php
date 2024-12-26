@@ -66,7 +66,6 @@ $bookings = $bookingModel->getAllBookings($where);
                           <span class="badge bg-danger">ไม่อนุมัติ</span>
                     <?php endif;?>
                  </td>
-                 <?php if ($_SESSION['role'] === 'admin'): ?>
                       <td>
                            <a href="/views/bookings/edit.php?id=<?php echo $booking['id']; ?>" class="btn btn-sm btn-warning">แก้ไข</a>
                            <?php if ($_SESSION['role'] === 'admin' && $booking['status'] === 'pending'): ?>
@@ -75,7 +74,6 @@ $bookings = $bookingModel->getAllBookings($where);
                            <?php endif;?>
                               <a href="/controllers/booking_controller.php?delete=<?php echo $booking['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('คุณต้องการลบการจองนี้หรือไม่?')">ลบ</a>
                      </td>
-                 <?php endif;?>
             </tr>
         <?php endforeach;?>
     </tbody>
