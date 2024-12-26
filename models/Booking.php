@@ -9,14 +9,14 @@ class Booking
         $this->pdo = $pdo;
     }
 
-    public function createBooking($userId, $roomId, $subject, $department, $phone, $attendees, $startTime, $endTime, $equipmentIds = [], $note = null)
+    public function createBooking($userId, $roomId, $subject, $department, $phone, $attendees, $startTime, $endTime, $equipmentIds = [], $note = null, $roomLayoutImage = null)
     {
         try {
             // Begin transaction to ensure atomicity
             $this->pdo->beginTransaction();
 
-            $stmt = $this->pdo->prepare("INSERT INTO bookings (user_id, room_id, subject, department, phone, attendees, start_time, end_time, note) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$userId, $roomId, $subject, $department, $phone, $attendees, $startTime, $endTime, $note]);
+            $stmt = $this->pdo->prepare("INSERT INTO bookings (user_id, room_id, subject, department, phone, attendees, start_time, end_time, note, room_layout_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$userId, $roomId, $subject, $department, $phone, $attendees, $startTime, $endTime, $note, $roomLayoutImage]);
 
             $bookingId = $this->pdo->lastInsertId();
 
@@ -28,7 +28,6 @@ class Booking
 
             // Commit transaction
             $this->pdo->commit();
-
             return $bookingId;
         } catch (PDOException $e) {
             // Rollback transaction if any error occurs
@@ -52,20 +51,20 @@ class Booking
             INNER JOIN rooms r ON b.room_id = r.id
             LEFT JOIN booking_equipments be ON b.id = be.booking_id
             LEFT JOIN equipments e ON be.equipment_id = e.id
-            WHERE b.id = ?
-            GROUP BY b.id
+           WHERE b.id = ?
+           GROUP BY b.id
         ");
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function updateBooking($id, $userId, $roomId, $subject, $department, $phone, $attendees, $startTime, $endTime, $equipmentIds = [], $note = null)
+    public function updateBooking($id, $userId, $roomId, $subject, $department, $phone, $attendees, $startTime, $endTime, $equipmentIds = [], $note = null, $roomLayoutImage = null)
     {
         try {
             // Begin transaction to ensure atomicity
             $this->pdo->beginTransaction();
-            $stmt = $this->pdo->prepare("UPDATE bookings SET user_id = ?, room_id = ?, subject = ?, department = ?, phone = ?, attendees = ?, start_time = ?, end_time = ?, note = ? WHERE id = ?");
-            $stmt->execute([$userId, $roomId, $subject, $department, $phone, $attendees, $startTime, $endTime, $note, $id]);
+            $stmt = $this->pdo->prepare("UPDATE bookings SET user_id = ?, room_id = ?, subject = ?, department = ?, phone = ?, attendees = ?, start_time = ?, end_time = ?, note = ?, room_layout_image = ? WHERE id = ?");
+            $stmt->execute([$userId, $roomId, $subject, $department, $phone, $attendees, $startTime, $endTime, $note, $roomLayoutImage, $id]);
 
             // Delete existing booking equipments
             $stmt = $this->pdo->prepare("DELETE FROM booking_equipments WHERE booking_id = ?");
@@ -81,6 +80,7 @@ class Booking
             $this->pdo->commit();
 
             return true;
+
         } catch (PDOException $e) {
             // Rollback transaction if any error occurs
             $this->pdo->rollBack();
@@ -116,16 +116,16 @@ class Booking
     {
         $sql = "
             SELECT
-                b.*,
-                u.first_name AS user_first_name,
-                u.last_name AS user_last_name,
-                r.name AS room_name,
-                GROUP_CONCAT(e.name) AS equipment_names
+                 b.*,
+                 u.first_name AS user_first_name,
+                 u.last_name AS user_last_name,
+              r.name AS room_name,
+               GROUP_CONCAT(e.name) AS equipment_names
             FROM bookings b
-            INNER JOIN users u ON b.user_id = u.id
-            INNER JOIN rooms r ON b.room_id = r.id
-            LEFT JOIN booking_equipments be ON b.id = be.booking_id
-            LEFT JOIN equipments e ON be.equipment_id = e.id ";
+              INNER JOIN users u ON b.user_id = u.id
+              INNER JOIN rooms r ON b.room_id = r.id
+               LEFT JOIN booking_equipments be ON b.id = be.booking_id
+              LEFT JOIN equipments e ON be.equipment_id = e.id ";
 
         $conditions = [];
         $params = [];
@@ -154,14 +154,14 @@ class Booking
     public function getBookingSummaryByRoom($where = [])
     {
         $sql = "
-              SELECT
-                   r.name AS room_name,
-                  COUNT(b.room_id) AS booking_count,
-                 r.color AS room_color
-            FROM bookings b
-             INNER JOIN rooms r ON b.room_id = r.id
-               WHERE b.status = 'approved'
-        ";
+                SELECT
+                    r.name AS room_name,
+                    COUNT(b.room_id) AS booking_count,
+                    r.color AS room_color
+               FROM bookings b
+                 INNER JOIN rooms r ON b.room_id = r.id
+                 WHERE b.status = 'approved'
+           ";
         $conditions = [];
         $params = [];
         foreach ($where as $key => $value) {
@@ -192,11 +192,11 @@ class Booking
             SELECT
                 u.first_name AS user_first_name,
                 u.last_name AS user_last_name,
-                 COUNT(b.user_id) AS booking_count
+                COUNT(b.user_id) AS booking_count
              FROM bookings b
-               INNER JOIN users u ON b.user_id = u.id
+                INNER JOIN users u ON b.user_id = u.id
                 WHERE b.status = 'approved'
-          ";
+        ";
 
         $conditions = [];
         $params = [];
@@ -215,14 +215,13 @@ class Booking
         if (!empty($conditions)) {
             $sql .= " AND " . implode(" AND ", $conditions);
         }
-
         $sql .= " GROUP BY u.id ORDER BY booking_count DESC";
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
 
+    }
     public function approveBooking($id)
     {
         $stmt = $this->pdo->prepare("UPDATE bookings SET status = 'approved' WHERE id = ?");
@@ -240,10 +239,10 @@ class Booking
             SELECT id, name
             FROM rooms
               WHERE id NOT IN (
-                 SELECT room_id
-                  FROM bookings
-                   WHERE (start_time < :endTime AND end_time > :startTime) AND status = 'approved'
-               )
+                SELECT room_id
+                   FROM bookings
+                  WHERE (start_time < :endTime AND end_time > :startTime) AND status = 'approved'
+              )
         ";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([':startTime' => $startTime, ':endTime' => $endTime]);
@@ -253,12 +252,12 @@ class Booking
     {
 
         $sql = "
-               SELECT COUNT(*) FROM bookings
+             SELECT COUNT(*) FROM bookings
                WHERE room_id = :room_id
                AND status = 'approved'
                AND id != :exclude_booking_id
-               AND ((start_time < :end_time AND end_time > :start_time))
-            ";
+             AND ((start_time < :end_time AND end_time > :start_time))
+         ";
 
         if ($excludeBookingId === null) {
             $sql = str_replace("AND id != :exclude_booking_id", "", $sql);

@@ -14,7 +14,7 @@ if ($bookingId) {
 
         if ($booking) {
             // Set header only when sending JSON
-            header('Content-Type: application/json');
+            header('Content-Type: application/json; charset=utf-8');
             $response = $booking;
         } else {
             $response = ['error' => 'ไม่พบข้อมูล'];
@@ -25,6 +25,7 @@ if ($bookingId) {
 } else {
     $response = ['error' => 'Invalid booking id'];
 }
+
 // Send JSON response
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 echo json_encode($response);

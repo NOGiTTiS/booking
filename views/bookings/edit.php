@@ -29,7 +29,7 @@ if (isset($booking['equipment_names'])) {
 ?>
 <h2>แก้ไขการจอง</h2>
 <?php if ($booking['status'] === 'pending'): ?>
-    <form action="../../controllers/booking_controller.php" method="post">
+    <form action="../../controllers/booking_controller.php" method="post" enctype="multipart/form-data">
   <input type="hidden" name="id" value="<?php echo $booking['id']; ?>">
      <div class="mb-3">
          <label for="room_id" class="form-label">ห้องประชุม</label>
@@ -71,6 +71,10 @@ if (isset($booking['equipment_names'])) {
                 <label class="form-check-label" for="equipment_<?php echo $equipment['id']; ?>"><?php echo $equipment['name']; ?></label>
             </div>
          <?php endforeach;?>
+     </div>
+     <div class="mb-3">
+          <label for="room_layout_image" class="form-label">รูปแบบการจัดห้อง (ไฟล์รูปภาพ)</label>
+           <input type="file" class="form-control" id="room_layout_image" name="room_layout_image">
      </div>
       <div class="mb-3">
            <label for="note" class="form-label">หมายเหตุ</label>

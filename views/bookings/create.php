@@ -11,7 +11,7 @@ $rooms = $roomModel->getAllRooms();
 $equipments = $equipmentModel->getAllEquipments();
 ?>
 <h2>จองห้องประชุม</h2>
-<form action="../../controllers/booking_controller.php" method="post">
+<form action="../../controllers/booking_controller.php" method="post" enctype="multipart/form-data">
     <div class="mb-3">
         <label for="room_id" class="form-label">ห้องประชุม</label>
         <select class="form-select" id="room_id" name="room_id" required>
@@ -53,6 +53,10 @@ $equipments = $equipmentModel->getAllEquipments();
             </div>
         <?php endforeach;?>
     </div>
+    <div class="mb-3">
+        <label for="room_layout_image" class="form-label">รูปแบบการจัดห้อง (ไฟล์รูปภาพ)</label>
+        <input type="file" class="form-control" id="room_layout_image" name="room_layout_image">
+   </div>
     <div class="mb-3">
         <label for="note" class="form-label">หมายเหตุ</label>
         <textarea class="form-control" id="note" name="note"></textarea>

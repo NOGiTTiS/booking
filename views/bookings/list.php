@@ -19,59 +19,63 @@ $bookings = $bookingModel->getAllBookings($where);
 <?php endif;?>
 <table class="table table-bordered">
     <thead>
-        <tr>
+    <tr>
             <th>หัวข้อ</th>
-            <th>ห้องประชุม</th>
+             <th>ห้องประชุม</th>
             <th>ผู้จอง</th>
              <th>ฝ่าย</th>
             <th>เบอร์โทร</th>
             <th>จำนวนผู้เข้าใช้</th>
-            <th>วันที่เริ่ม</th>
-            <th>วันที่สิ้นสุด</th>
-            <th>อุปกรณ์</th>
-              <th>หมายเหตุ</th>
+           <th>เวลาเริ่ม</th>
+           <th>เวลาสิ้นสุด</th>
+             <th>อุปกรณ์</th>
+             <th>รูปแบบการจัดห้อง</th>
+           <th>หมายเหตุ</th>
             <th>สถานะ</th>
-             <th>จัดการ</th>
-        </tr>
+            <?php if ($_SESSION['role'] === 'admin'): ?>
+                <th>จัดการ</th>
+          <?php endif;?>
+       </tr>
     </thead>
     <tbody>
-        <?php foreach ($bookings as $booking): ?>
+    <?php foreach ($bookings as $booking): ?>
             <tr>
-                <td><?php echo $booking['subject']; ?></td>
+                 <td><?php echo $booking['subject']; ?></td>
                  <td><?php echo $booking['room_name']; ?></td>
                  <td><?php echo $booking['user_first_name'] . " " . $booking['user_last_name']; ?></td>
-                 <td><?php echo $booking['department']; ?></td>
-                  <td><?php echo $booking['phone']; ?></td>
-                 <td><?php echo $booking['attendees']; ?></td>
-                <td><?php echo date('d/m/Y H:i', strtotime($booking['start_time'])); ?></td>
+               <td><?php echo $booking['department']; ?></td>
+                <td><?php echo $booking['phone']; ?></td>
+                <td><?php echo $booking['attendees']; ?></td>
+              <td><?php echo date('d/m/Y H:i', strtotime($booking['start_time'])); ?></td>
                 <td><?php echo date('d/m/Y H:i', strtotime($booking['end_time'])); ?></td>
-
-                 <td><?php echo $booking['equipment_names']; ?></td>
-                 <td><?php echo $booking['note']; ?></td>
-                 <td>
+                <td><?php echo $booking['equipment_names']; ?></td>
+                <td>
+                   <?php if ($booking['room_layout_image']): ?>
+                        <img src="<?php echo $booking['room_layout_image']; ?>" alt="Room Layout" style="max-width: 100px; max-height: 100px;">
+                    <?php else: ?>
+                        -
+                   <?php endif;?>
+                 </td>
+               <td><?php echo $booking['note']; ?></td>
+               <td>
                      <?php if ($booking['status'] == 'pending'): ?>
                          <span class="badge bg-warning">รออนุมัติ</span>
                      <?php elseif ($booking['status'] == 'approved'): ?>
-                         <span class="badge bg-success">อนุมัติ</span>
-                    <?php else: ?>
-                        <span class="badge bg-danger">ไม่อนุมัติ</span>
-                   <?php endif;?>
-                 </td>
-                 <td>
-                      <?php if ($_SESSION['role'] === 'admin'): ?>
-                            <a href="/views/bookings/edit.php?id=<?php echo $booking['id']; ?>" class="btn btn-sm btn-warning">แก้ไข</a>
-                           <?php if ($_SESSION['role'] === 'admin' && $booking['status'] === 'pending'): ?>
-                                  <a href="/controllers/booking_controller.php?approve=<?php echo $booking['id']; ?>" class="btn btn-sm btn-success">อนุมัติ</a>
-                                 <a href="/controllers/booking_controller.php?reject=<?php echo $booking['id']; ?>" class="btn btn-sm btn-danger">ปฏิเสธ</a>
-                         <?php endif;?>
-                              <a href="/controllers/booking_controller.php?delete=<?php echo $booking['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('คุณต้องการลบการจองนี้หรือไม่?')">ลบ</a>
+                          <span class="badge bg-success">อนุมัติ</span>
                      <?php else: ?>
-                         <?php if ($booking['user_id'] === $_SESSION['user_id']): ?>
-                             <a href="/views/bookings/edit.php?id=<?php echo $booking['id']; ?>" class="btn btn-sm btn-warning">แก้ไข</a>
-                           <a href="/controllers/booking_controller.php?delete=<?php echo $booking['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('คุณต้องการลบการจองนี้หรือไม่?')">ลบ</a>
-                          <?php endif;?>
+                          <span class="badge bg-danger">ไม่อนุมัติ</span>
                     <?php endif;?>
                  </td>
+                 <?php if ($_SESSION['role'] === 'admin'): ?>
+                      <td>
+                           <a href="/views/bookings/edit.php?id=<?php echo $booking['id']; ?>" class="btn btn-sm btn-warning">แก้ไข</a>
+                           <?php if ($_SESSION['role'] === 'admin' && $booking['status'] === 'pending'): ?>
+                                 <a href="/controllers/booking_controller.php?approve=<?php echo $booking['id']; ?>" class="btn btn-sm btn-success">อนุมัติ</a>
+                               <a href="/controllers/booking_controller.php?reject=<?php echo $booking['id']; ?>" class="btn btn-sm btn-danger">ปฏิเสธ</a>
+                           <?php endif;?>
+                              <a href="/controllers/booking_controller.php?delete=<?php echo $booking['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('คุณต้องการลบการจองนี้หรือไม่?')">ลบ</a>
+                     </td>
+                 <?php endif;?>
             </tr>
         <?php endforeach;?>
     </tbody>

@@ -16,16 +16,15 @@ $selectedRoom = isset($_GET['room_id']) ? $_GET['room_id'] : '';
 $startDate = isset($_GET['start_date']) ? $_GET['start_date'] : '';
 $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : '';
 $where = [];
-if($startDate && $endDate){
+if ($startDate && $endDate) {
     $where = ['start_time >=' => $startDate, 'end_time <=' => $endDate];
 }
-if($selectedRoom){
+if ($selectedRoom) {
     $where = array_merge($where, ['room_id' => $selectedRoom]);
 }
 
 $bookings = $bookingModel->getAllBookings($where);
 $bookingSummary = $bookingModel->getBookingSummaryByRoom($where);
-
 
 function getStatusLabel($status)
 {
@@ -50,7 +49,7 @@ function getStatusLabel($status)
             <option value="">ทั้งหมด</option>
             <?php foreach ($rooms as $room): ?>
                 <option value="<?php echo $room['id']; ?>" <?php echo ($room['id'] == $selectedRoom) ? 'selected' : ''; ?>><?php echo $room['name']; ?></option>
-           <?php endforeach; ?>
+           <?php endforeach;?>
        </select>
    </div>
      <div class="col-md-3">
@@ -68,57 +67,65 @@ function getStatusLabel($status)
 </form>
 <table class="table table-bordered">
     <thead>
-        <tr>
-             <th>หัวข้อ</th>
-            <th>ห้องประชุม</th>
-             <th>ผู้จอง</th>
-             <th>ฝ่าย</th>
-            <th>เบอร์โทร</th>
-            <th>จำนวนผู้เข้าใช้</th>
-            <th>เวลาเริ่ม</th>
-             <th>เวลาสิ้นสุด</th>
-              <th>อุปกรณ์</th>
-            <th>หมายเหตุ</th>
-            <th>สถานะ</th>
-       </tr>
+    <tr>
+        <th>หัวข้อ</th>
+        <th>ห้องประชุม</th>
+        <th>ผู้จอง</th>
+        <th>ฝ่าย</th>
+        <th>เบอร์โทร</th>
+        <th>จำนวนผู้เข้าใช้</th>
+        <th>เวลาเริ่ม</th>
+        <th>เวลาสิ้นสุด</th>
+        <th>อุปกรณ์</th>
+        <th>รูปแบบการจัดห้อง</th>
+        <th>หมายเหตุ</th>
+        <th>สถานะ</th>
+        </tr>
     </thead>
     <tbody>
-        <?php if(count($bookings) > 0): ?>
-            <?php foreach ($bookings as $booking): ?>
-                <tr>
-                    <td><?php echo $booking['subject']; ?></td>
-                    <td><?php echo $booking['room_name']; ?></td>
-                    <td><?php echo $booking['user_first_name'] . " " . $booking['user_last_name']; ?></td>
-                    <td><?php echo $booking['department']; ?></td>
-                     <td><?php echo $booking['phone']; ?></td>
-                     <td><?php echo $booking['attendees']; ?></td>
-                      <td><?php echo date('d/m/Y H:i', strtotime($booking['start_time'])); ?></td>
-                     <td><?php echo date('d/m/Y H:i', strtotime($booking['end_time'])); ?></td>
-                     <td><?php echo $booking['equipment_names']; ?></td>
-                     <td><?php echo $booking['note']; ?></td>
-                     <td><?php echo getStatusLabel($booking['status']); ?></td>
-                 </tr>
-            <?php endforeach; ?>
-         <?php else: ?>
-             <tr><td colspan="11" class="text-center">ไม่พบข้อมูล</td></tr>
-         <?php endif; ?>
-    </tbody>
-</table>
-    <h3 class="mt-4">สรุปการจองใช้งานแต่ละห้อง (อนุมัติแล้วเท่านั้น)</h3>
-    <table class="table table-bordered">
+    <?php if (count($bookings) > 0): ?>
+    <?php foreach ($bookings as $booking): ?>
+        <tr>
+            <td><?php echo $booking['subject']; ?></td>
+            <td><?php echo $booking['room_name']; ?></td>
+            <td><?php echo $booking['user_first_name'] . " " . $booking['user_last_name']; ?></td>
+            <td><?php echo $booking['department']; ?></td>
+            <td><?php echo $booking['phone']; ?></td>
+            <td><?php echo $booking['attendees']; ?></td>
+            <td><?php echo date('d/m/Y H:i', strtotime($booking['start_time'])); ?></td>
+            <td><?php echo date('d/m/Y H:i', strtotime($booking['end_time'])); ?></td>
+            <td><?php echo $booking['equipment_names']; ?></td>
+            <td>
+                <?php if ($booking['room_layout_image']): ?>
+                <img src="<?php echo $booking['room_layout_image']; ?>" alt="Room Layout" style="max-width: 100px; max-height: 100px;">
+                <?php else: ?>
+                -
+                <?php endif;?>
+            </td>
+            <td><?php echo $booking['note']; ?></td>
+            <td><?php echo getStatusLabel($booking['status']); ?></td>
+        </tr>
+        <?php endforeach;?>
+        <?php else: ?>
+        <tr><td colspan="11" class="text-center">ไม่พบข้อมูล</td></tr>
+        <?php endif;?>
+        </tbody>
+    </table>
+        <h3 class="mt-4">สรุปการจองใช้งานแต่ละห้อง (อนุมัติแล้วเท่านั้น)</h3>
+        <table class="table table-bordered">
         <thead>
-           <tr>
-                <th>ห้องประชุม</th>
-                <th>จำนวนครั้ง</th>
-           </tr>
+        <tr>
+        <th>ห้องประชุม</th>
+        <th>จำนวนครั้ง</th>
+        </tr>
         </thead>
         <tbody>
-            <?php foreach ($bookingSummary as $summary): ?>
-                <tr>
-                    <td><?php echo $summary['room_name']; ?></td>
-                     <td><?php echo $summary['booking_count']; ?></td>
-                </tr>
-           <?php endforeach; ?>
-       </tbody>
-    </table>
-<?php include '../layouts/footer.php'; ?>
+        <?php foreach ($bookingSummary as $summary): ?>
+        <tr>
+        <td><?php echo $summary['room_name']; ?></td>
+        <td><?php echo $summary['booking_count']; ?></td>
+        </tr>
+        <?php endforeach;?>
+    </tbody>
+</table>
+<?php include '../layouts/footer.php';?>

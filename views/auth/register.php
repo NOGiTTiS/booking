@@ -152,11 +152,11 @@ session_start();
      <h2>สมัครสมาชิก</h2>
          <form action="../../controllers/auth_controller.php" method="post">
              <div class="form-group">
-                 <label for="username" class="form-label">ชื่อผู้ใช้</label>
+                 <label for="username" class="form-label">Username</label>
                  <input type="text" class="form-control" id="username" name="username" required>
              </div>
              <div class="form-group">
-                 <label for="password" class="form-label">รหัสผ่าน</label>
+                 <label for="password" class="form-label">Password</label>
                  <input type="password" class="form-control" id="password" name="password" required>
              </div>
             <div class="form-group">

@@ -34,15 +34,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $endTime = $_POST['end_time'];
         $equipmentIds = isset($_POST['equipments']) ? $_POST['equipments'] : [];
         $note = $_POST['note'];
+        //$roomLayoutImage = null;
         try {
-
+            // Upload image if it exists and no error
+            $roomLayoutImage = null; // Initialize $roomLayoutImage
+            if (isset($_FILES['room_layout_image']) && $_FILES['room_layout_image']['error'] === UPLOAD_ERR_OK) {
+                $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/assets/img/room_layouts/'; // Define upload directory
+                $uploadFile = $uploadDir . basename($_FILES['room_layout_image']['name']);
+                if (move_uploaded_file($_FILES['room_layout_image']['tmp_name'], $uploadFile)) {
+                    $roomLayoutImage = '/assets/img/room_layouts/' . basename($_FILES['room_layout_image']['name']);
+                    //error_log("uploadfile: " . $uploadFile);
+                    //error_log("roomLayoutImage: " . $roomLayoutImage);
+                } else {
+                    error_log("Error moving uploaded file");
+                }
+            }
             if ($bookingModel->checkBookingAvailability($roomId, $startTime, $endTime)) {
                 $_SESSION['error_message'] = "ไม่สามารถจองห้องได้ เนื่องจากช่วงเวลาดังกล่าวไม่ว่าง กรุณาเลือกช่วงเวลาอื่น";
                 header("Location: ../views/bookings/create.php");
                 exit();
             }
 
-            if ($bookingId = $bookingModel->createBooking($userId, $roomId, $subject, $department, $phone, $attendees, $startTime, $endTime, $equipmentIds, $note)) {
+            if ($bookingId = $bookingModel->createBooking($userId, $roomId, $subject, $department, $phone, $attendees, $startTime, $endTime, $equipmentIds, $note, $roomLayoutImage)) {
                 $_SESSION['success_message'] = "จองห้องสำเร็จ กรุณารอการอนุมัติ";
                 header('Location: ../views/bookings/list.php');
                 // Send email notification
@@ -96,6 +109,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $equipmentIds = isset($_POST['equipments']) ? $_POST['equipments'] : [];
         $note = $_POST['note'];
         $booking = $bookingModel->getBookingById($bookingId);
+        $roomLayoutImage = $booking['room_layout_image'];
+        if (isset($_FILES['room_layout_image']) && $_FILES['room_layout_image']['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/assets/img/room_layouts/'; // Define upload directory (use absolute path)
+            $uploadFile = $uploadDir . basename($_FILES['room_layout_image']['name']);
+            if (move_uploaded_file($_FILES['room_layout_image']['tmp_name'], $uploadFile)) {
+                $roomLayoutImage = '/assets/img/room_layouts/' . basename($_FILES['room_layout_image']['name']); // Set full path to store in db
+            } else {
+                error_log("Error moving uploaded file");
+            }
+        }
         if ($booking['status'] !== 'pending' || $booking['user_id'] !== $userId) {
             $_SESSION['error_message'] = "ไม่สามารถแก้ไขการจองได้เนื่องจากได้รับการอนุมัติหรือถูกปฏิเสธแล้ว หรือไม่ใช่รายการจองของคุณ";
             header("Location: ../views/bookings/edit.php?id=$bookingId");
@@ -107,8 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header("Location: ../views/bookings/edit.php?id=$bookingId");
                 exit();
             }
-
-            if ($bookingModel->updateBooking($bookingId, $userId, $roomId, $subject, $department, $phone, $attendees, $startTime, $endTime, $equipmentIds, $note)) {
+            if ($bookingModel->updateBooking($bookingId, $userId, $roomId, $subject, $department, $phone, $attendees, $startTime, $endTime, $equipmentIds, $note, $roomLayoutImage)) {
                 $_SESSION['success_message'] = "แก้ไขการจองสำเร็จ";
                 header('Location: ../views/bookings/list.php');
                 exit();
@@ -125,10 +147,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
+
     if (isset($_GET['approve'])) {
         $bookingId = $_GET['approve'];
         $booking = $bookingModel->getBookingById($bookingId);
-        $user = $userModel->getUserById($booking['user_id']); // ตรวจสอบว่ามีบรรทัดนี้ และ `user` ถูกใช้งาน
+        $user = $userModel->getUserById($booking['user_id']);
         if ($bookingModel->approveBooking($bookingId)) {
             $_SESSION['success_message'] = "อนุมัติการจองสำเร็จ";
             header('Location: ../views/bookings/list.php');
@@ -167,7 +190,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (isset($_GET['reject'])) {
         $bookingId = $_GET['reject'];
         $booking = $bookingModel->getBookingById($bookingId);
-        $user = $userModel->getUserById($booking['user_id']); // ตรวจสอบว่ามีบรรทัดนี้ และ `user` ถูกใช้งาน
+        $user = $userModel->getUserById($booking['user_id']);
 
         if ($bookingModel->rejectBooking($bookingId)) {
             $_SESSION['success_message'] = "ปฏิเสธการจองสำเร็จ";
