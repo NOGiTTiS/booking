@@ -59,7 +59,9 @@ $equipments = $equipmentModel->getAllEquipments();
    </div>
     <div class="mb-3">
         <label for="note" class="form-label">หมายเหตุ</label>
-        <textarea class="form-control" id="note" name="note"></textarea>
+        <textarea class="form-control" id="note" name="note" placeholder="ตัวอย่าง : โต๊ะ....ตัว
+            เก้าอี้...ตัว
+        "></textarea>
     </div>
     <button type="submit" class="btn btn-primary" name="create">จอง</button>
 </form>

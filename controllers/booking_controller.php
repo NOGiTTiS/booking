@@ -5,12 +5,6 @@ require_once '../models/Booking.php';
 require_once '../models/Room.php';
 require_once '../models/Equipment.php';
 require_once '../models/User.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/vendor/PHPMailer/src/Exception.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/vendor/PHPMailer/src/PHPMailer.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/vendor/PHPMailer/src/SMTP.php';
-use PHPMailer\PHPMailer\Exception;
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
 
 if (!isset($_SESSION['user_id'])) {
     header('Location: ../views/auth/login.php');
@@ -20,10 +14,33 @@ $bookingModel = new Booking($pdo);
 $roomModel = new Room($pdo);
 $equipmentModel = new Equipment($pdo);
 $userModel = new User($pdo);
+
+// Function to send Line Notify
+function sendLineNotify($message, $token)
+{
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => 'https://notify-api.line.me/api/notify',
+        CURLOPT_SSL_VERIFYPEER => 0,
+        CURLOPT_POST => 1,
+        CURLOPT_POSTFIELDS => http_build_query(['message' => $message]),
+        CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $token],
+        CURLOPT_RETURNTRANSFER => 1,
+    ]);
+    $result = curl_exec($ch);
+    curl_close($ch);
+    if ($result !== false) {
+        // Log successful response
+        error_log("Line Notify sent successfully. Response: " . $result);
+    } else {
+        // Log curl error
+        error_log("Error sending Line Notify: " . curl_error($ch));
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
     if (isset($_POST['create'])) {
-
+        // code สำหรับการสร้างการจอง
         $userId = $_SESSION['user_id'];
         $roomId = $_POST['room_id'];
         $subject = $_POST['subject'];
@@ -34,17 +51,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $endTime = $_POST['end_time'];
         $equipmentIds = isset($_POST['equipments']) ? $_POST['equipments'] : [];
         $note = $_POST['note'];
-        //$roomLayoutImage = null;
+        $roomLayoutImage = null;
         try {
-            // Upload image if it exists and no error
-            $roomLayoutImage = null; // Initialize $roomLayoutImage
             if (isset($_FILES['room_layout_image']) && $_FILES['room_layout_image']['error'] === UPLOAD_ERR_OK) {
-                $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/assets/img/room_layouts/'; // Define upload directory
+                $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/assets/img/room_layouts/';
                 $uploadFile = $uploadDir . basename($_FILES['room_layout_image']['name']);
                 if (move_uploaded_file($_FILES['room_layout_image']['tmp_name'], $uploadFile)) {
                     $roomLayoutImage = '/assets/img/room_layouts/' . basename($_FILES['room_layout_image']['name']);
-                    //error_log("uploadfile: " . $uploadFile);
-                    //error_log("roomLayoutImage: " . $roomLayoutImage);
                 } else {
                     error_log("Error moving uploaded file");
                 }
@@ -58,31 +71,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($bookingId = $bookingModel->createBooking($userId, $roomId, $subject, $department, $phone, $attendees, $startTime, $endTime, $equipmentIds, $note, $roomLayoutImage)) {
                 $_SESSION['success_message'] = "จองห้องสำเร็จ กรุณารอการอนุมัติ";
                 header('Location: ../views/bookings/list.php');
-                // Send email notification
-                try {
-                    $mail = new PHPMailer(true);
-                    //Server settings
-                    $mail->isSMTP();
-                    $mail->Host = 'smtp.gmail.com'; // ใส่ SMTP Host ของคุณ
-                    $mail->SMTPAuth = true;
-                    $mail->Username = 'booking.room@tn.ac.th'; // ใส่ SMTP Username ของคุณ
-                    $mail->Password = 'skwd kghl xtkz cbca'; // ใส่ SMTP Password ของคุณ
-                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                    $mail->Port = 587;
-
-                    //Recipients
-                    $mail->setFrom('booking.room@tn.ac.th', 'ระบบจองห้องประชุม'); // ใส่ email ของคุณ และชื่อที่จะแสดง
-                    $mail->addAddress('booking.room@tn.ac.th', 'Admin'); // ใส่ email admin และชื่อที่จะแสดง
-                    //Content
-                    $mail->isHTML(true);
-                    $mail->CharSet = 'UTF-8';
-                    $mail->Subject = 'มีการจองห้องประชุมใหม่';
-                    $mail->Body = "มีการจองห้องประชุมใหม่ รหัสการจอง: $bookingId, หัวข้อ: $subject, ห้อง: $roomId, เวลา: $startTime - $endTime";
-                    $mail->send();
-                } catch (Exception $e) {
-                    // Handle email sending error (Optional)
-                    error_log("Email sending error: " . $e->getMessage());
-                }
+                // Send Line Notify notification to admin
+                $adminLineToken = 'HbTe6twxn0wll7Z117LrqltUszkjx4rAaqYtjojwB65'; // ใส่ Line Notify Token ของ Admin
+                $message = "มีการจองห้องประชุมใหม่ รหัสการจอง: $bookingId, หัวข้อ: $subject, ห้อง: $roomId, เวลา: $startTime - $endTime";
+                $link = "/views/bookings/list.php";
+                $message .= "\n" . "http://" . $_SERVER['HTTP_HOST'] . $link;
+                sendLineNotify($message, $adminLineToken);
                 exit();
             } else {
                 $_SESSION['error_message'] = "ไม่สามารถจองห้องได้ กรุณาลองใหม่อีกครั้ง";
@@ -110,11 +104,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $note = $_POST['note'];
         $booking = $bookingModel->getBookingById($bookingId);
         $roomLayoutImage = $booking['room_layout_image'];
+
         if (isset($_FILES['room_layout_image']) && $_FILES['room_layout_image']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/assets/img/room_layouts/'; // Define upload directory (use absolute path)
+            $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/assets/img/room_layouts/';
             $uploadFile = $uploadDir . basename($_FILES['room_layout_image']['name']);
             if (move_uploaded_file($_FILES['room_layout_image']['tmp_name'], $uploadFile)) {
-                $roomLayoutImage = '/assets/img/room_layouts/' . basename($_FILES['room_layout_image']['name']); // Set full path to store in db
+                $roomLayoutImage = '/assets/img/room_layouts/' . basename($_FILES['room_layout_image']['name']);
             } else {
                 error_log("Error moving uploaded file");
             }
@@ -130,6 +125,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header("Location: ../views/bookings/edit.php?id=$bookingId");
                 exit();
             }
+
             if ($bookingModel->updateBooking($bookingId, $userId, $roomId, $subject, $department, $phone, $attendees, $startTime, $endTime, $equipmentIds, $note, $roomLayoutImage)) {
                 $_SESSION['success_message'] = "แก้ไขการจองสำเร็จ";
                 header('Location: ../views/bookings/list.php');
@@ -146,8 +142,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
     }
-} elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
+} elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if (isset($_GET['approve'])) {
         $bookingId = $_GET['approve'];
         $booking = $bookingModel->getBookingById($bookingId);
@@ -155,32 +151,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($bookingModel->approveBooking($bookingId)) {
             $_SESSION['success_message'] = "อนุมัติการจองสำเร็จ";
             header('Location: ../views/bookings/list.php');
-            // Send email notification to user
-            try {
-                $mail = new PHPMailer(true);
-                //Server settings
-                $mail->isSMTP();
-                $mail->Host = 'smtp.gmail.com'; // ใส่ SMTP Host ของคุณ
-                $mail->SMTPAuth = true;
-                $mail->Username = 'booking.room@tn.ac.th'; // ใส่ SMTP Username ของคุณ
-                $mail->Password = 'skwd kghl xtkz cbca'; // ใส่ SMTP Password ของคุณ
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                $mail->Port = 587;
-
-                //Recipients
-                $mail->setFrom('booking.room@tn.ac.th', 'ระบบจองห้องประชุม'); // ใส่ email ของคุณ และชื่อที่จะแสดง
-                $mail->addAddress($user['email'], $user['first_name'] . ' ' . $user['last_name']); // ใส่ email user
-
-                //Content
-                $mail->isHTML(true);
-                $mail->CharSet = 'UTF-8'; // Add character set here
-                $mail->Subject = 'การจองห้องประชุมของคุณได้รับการอนุมัติ';
-                $mail->Body = "การจองห้องประชุมของคุณ รหัสการจอง: $bookingId, หัวข้อ: {$booking['subject']} ได้รับการอนุมัติแล้ว";
-                $mail->send();
-            } catch (Exception $e) {
-                // Handle email sending error (Optional)
-                error_log("Email sending error: " . $e->getMessage());
-            }
+            // Send Line Notify notification to user
+            $userLineToken = 'HbTe6twxn0wll7Z117LrqltUszkjx4rAaqYtjojwB65'; // ใส่ Line Notify Token ของ User
+            $message = "การจองห้องประชุมของคุณ รหัสการจอง: $bookingId, หัวข้อ: {$booking['subject']} ได้รับการอนุมัติแล้ว";
+            $link = "/views/bookings/list.php";
+            $message .= "\n" . "http://" . $_SERVER['HTTP_HOST'] . $link;
+            sendLineNotify($message, $userLineToken);
             exit();
         } else {
             $_SESSION['error_message'] = "ไม่สามารถอนุมัติการจองได้ กรุณาลองใหม่อีกครั้ง";
@@ -191,35 +167,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $bookingId = $_GET['reject'];
         $booking = $bookingModel->getBookingById($bookingId);
         $user = $userModel->getUserById($booking['user_id']);
-
         if ($bookingModel->rejectBooking($bookingId)) {
             $_SESSION['success_message'] = "ปฏิเสธการจองสำเร็จ";
             header('Location: ../views/bookings/list.php');
-            // Send email notification to user
-            try {
-                $mail = new PHPMailer(true);
-                //Server settings
-                $mail->isSMTP();
-                $mail->Host = 'smtp.gmail.com'; // ใส่ SMTP Host ของคุณ
-                $mail->SMTPAuth = true;
-                $mail->Username = 'booking.room@tn.ac.th'; // ใส่ SMTP Username ของคุณ
-                $mail->Password = 'skwd kghl xtkz cbca'; // ใส่ SMTP Password ของคุณ
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                $mail->Port = 587;
-
-                //Recipients
-                $mail->setFrom('booking.room@tn.ac.th', 'ระบบจองห้องประชุม'); // ใส่ email ของคุณ และชื่อที่จะแสดง
-                $mail->addAddress($user['email'], $user['first_name'] . ' ' . $user['last_name']); // ใส่ email user
-                //Content
-                $mail->isHTML(true);
-                $mail->CharSet = 'UTF-8'; // Add character set here
-                $mail->Subject = 'การจองห้องประชุมของคุณถูกปฏิเสธ';
-                $mail->Body = "การจองห้องประชุมของคุณ รหัสการจอง: $bookingId, หัวข้อ: {$booking['subject']} ถูกปฏิเสธ";
-                $mail->send();
-            } catch (Exception $e) {
-                // Handle email sending error (Optional)
-                error_log("Email sending error: " . $e->getMessage());
-            }
+            // Send Line Notify notification to user
+            $userLineToken = 'HbTe6twxn0wll7Z117LrqltUszkjx4rAaqYtjojwB65'; // ใส่ Line Notify Token ของ User
+            $message = "การจองห้องประชุมของคุณ รหัสการจอง: $bookingId, หัวข้อ: {$booking['subject']} ถูกปฏิเสธ";
+            $link = "/views/bookings/list.php";
+            $message .= "\n" . "http://" . $_SERVER['HTTP_HOST'] . $link;
+            sendLineNotify($message, $userLineToken);
             exit();
         } else {
             $_SESSION['error_message'] = "ไม่สามารถปฏิเสธการจองได้ กรุณาลองใหม่อีกครั้ง";
@@ -229,7 +185,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     } elseif (isset($_GET['delete'])) {
         $bookingId = $_GET['delete'];
-
         try {
             if ($bookingModel->deleteBooking($bookingId)) {
                 $_SESSION['success_message'] = "ลบการจองสำเร็จ";
