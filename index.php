@@ -49,7 +49,7 @@ if (isset($_SESSION['user_id'])) {
       </div>
 </div>
 <div class="row">
-    <div class="col-md-12">
+    <div class="col-md-12" id="cal">
         <h2>ปฏิทินการจองห้องประชุม</h2>
         <div id="calendar"></div>
         <script>

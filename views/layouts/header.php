@@ -27,6 +27,7 @@
            display: flex;
             flex-direction: column;
             min-height: 100vh;
+            background-color: #f8d7e9;
             font-family: 'Prompt', sans-serif; /* Apply Prompt Font to body */
         }
 
@@ -35,6 +36,14 @@
           }
          .navbar-brand {
             color: #000; /* เปลี่ยนสีชื่อแบรนด์เป็นสีดำ */
+       }
+
+       #cal{
+        background-color: #fff;
+       }
+
+       #ft{
+        background-color: #ddd;
        }
        </style>
  </head>
@@ -67,6 +76,7 @@
                                     <li><a class="dropdown-item" href="/views/reports/user_booking_report.php">รายงานผู้ใช้งาน</a></li>
                                 </ul>
                          </li>
+                         <li class="nav-item"><a class="nav-link" href="/views/admin/user_management.php">จัดการผู้ใช้งาน</a></li>
                       <?php endif;?>
                      <li class="nav-item"><a class="nav-link" href="/controllers/auth_controller.php?logout=true">ออกจากระบบ</a></li>
                  <?php else: ?>

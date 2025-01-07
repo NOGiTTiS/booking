@@ -35,6 +35,30 @@ class User
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
+    public function updateUser($id, $username, $firstName, $lastName, $email, $phone, $role)
+    {
+        try {
+            $stmt = $this->pdo->prepare("UPDATE users SET username = ?, first_name = ?, last_name = ?, email = ?, phone = ?, role = ? WHERE id = ?");
+            $stmt->execute([$username, $firstName, $lastName, $email, $phone, $role, $id]);
+            return true;
+        } catch (PDOException $e) {
+            throw new Exception("Error updating user: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function deleteUser($id)
+    {
+        try {
+            $stmt = $this->pdo->prepare("DELETE FROM users WHERE id = ?");
+            $stmt->execute([$id]);
+            return true;
+        } catch (PDOException $e) {
+            throw new Exception("Error deleting user: " . $e->getMessage());
+            return false;
+        }
+    }
+
     public function verifyPassword($password, $hashedPassword)
     {
         return password_verify($password, $hashedPassword);
