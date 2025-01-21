@@ -112,43 +112,45 @@ class Booking
         }
     }
 
-    public function getAllBookings($where = [])
-    {
+    public function getAllBookings($where = []) {
         $sql = "
-            SELECT
-                 b.*,
-                 u.first_name AS user_first_name,
-                 u.last_name AS user_last_name,
-              r.name AS room_name,
-               GROUP_CONCAT(e.name) AS equipment_names
+            SELECT 
+                b.*, 
+                u.first_name AS user_first_name,
+                u.last_name AS user_last_name,
+                r.name AS room_name,
+                GROUP_CONCAT(e.name) AS equipment_names,
+                 a.first_name AS admin_first_name,
+                a.last_name AS admin_last_name
             FROM bookings b
-              INNER JOIN users u ON b.user_id = u.id
-              INNER JOIN rooms r ON b.room_id = r.id
-               LEFT JOIN booking_equipments be ON b.id = be.booking_id
-              LEFT JOIN equipments e ON be.equipment_id = e.id ";
-
+            INNER JOIN users u ON b.user_id = u.id
+            INNER JOIN rooms r ON b.room_id = r.id
+           LEFT JOIN users a ON b.admin_id = a.id
+            LEFT JOIN booking_equipments be ON b.id = be.booking_id
+            LEFT JOIN equipments e ON be.equipment_id = e.id ";
         $conditions = [];
-        $params = [];
+       $params = [];
         foreach ($where as $key => $value) {
-            if (strpos($key, '>=') !== false) {
+          if (strpos($key, '>=') !== false) {
                 $conditions[] = str_replace('>=', '', $key) . " >= ?";
                 $params[] = $value;
-            } else if (strpos($key, '<=') !== false) {
+            }else if(strpos($key, '<=') !== false) {
                 $conditions[] = str_replace('<=', '', $key) . " <= ?";
-                $params[] = $value;
-            } else {
-                $conditions[] = "$key = ?";
-                $params[] = $value;
-            }
+               $params[] = $value;
+           }else{
+                 $conditions[] = "$key = ?";
+                 $params[] = $value;
+           }
+       }
+    
+       if (!empty($conditions)) {
+           $sql .= " WHERE " . implode(" AND ", $conditions);
         }
-        if (!empty($conditions)) {
-            $sql .= " WHERE " . implode(" AND ", $conditions);
-        }
-        $sql .= " GROUP BY b.id ORDER BY b.id DESC";
-
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+      $sql .= " GROUP BY b.id ORDER BY b.id DESC";
+    
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->execute($params);
+       return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getBookingSummaryByRoom($where = [])
@@ -222,16 +224,31 @@ class Booking
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     }
-    public function approveBooking($id)
-    {
-        $stmt = $this->pdo->prepare("UPDATE bookings SET status = 'approved' WHERE id = ?");
-        return $stmt->execute([$id]);
+    public function approveBooking($id, $adminId) {
+        try{
+          $booking = $this->getBookingById($id);
+             if(!$booking)
+           {
+               throw new Exception("Booking not found");
+           }
+            if($this->checkBookingAvailability($booking['room_id'], $booking['start_time'], $booking['end_time'], $id))
+            {
+              throw new Exception("ไม่สามารถอนุมัติได้ เนื่องจากช่วงเวลาดังกล่าวไม่ว่าง กรุณาตรวจสอบ");
+            }
+            $stmt = $this->pdo->prepare("UPDATE bookings SET status = 'approved', admin_id = ? WHERE id = ?");
+            $stmt->execute([$adminId, $id]);
+             return true;
+   
+         } catch (Exception $e) {
+           throw new Exception($e->getMessage());
+           return false;
+         }
     }
 
-    public function rejectBooking($id)
+    public function rejectBooking($id,$adminId)
     {
-        $stmt = $this->pdo->prepare("UPDATE bookings SET status = 'rejected' WHERE id = ?");
-        return $stmt->execute([$id]);
+        $stmt = $this->pdo->prepare("UPDATE bookings SET status = 'rejected', admin_id = ? WHERE id = ?");
+        return $stmt->execute([$adminId, $id]);
     }
     public function getAvailableRooms($startTime, $endTime)
     {

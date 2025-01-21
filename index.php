@@ -40,11 +40,11 @@ if (isset($_SESSION['user_id'])) {
                 <?php else: ?>
                   <p>สวัสดี!</p>
               <?php endif;?>
-            <a href="/views/bookings/create.php" class="btn btn-primary mb-3">จองห้องประชุม</a>
+            <a href="/booking/views/bookings/create.php" class="btn btn-primary mb-3">จองห้องประชุม</a>
         <?php else: ?>
             <p>กรุณาเข้าสู่ระบบเพื่อทำการจองห้องประชุม</p>
-              <a href="/views/auth/login.php" class="btn btn-primary mb-3">เข้าสู่ระบบ</a>
-              <a href="/views/auth/register.php" class="btn btn-primary mb-3">สมัครสมาชิก</a>
+              <a href="/booking/views/auth/login.php" class="btn btn-primary mb-3">เข้าสู่ระบบ</a>
+              <a href="/booking/views/auth/register.php" class="btn btn-primary mb-3">สมัครสมาชิก</a>
           <?php endif;?>
       </div>
 </div>
@@ -64,7 +64,7 @@ if (isset($_SESSION['user_id'])) {
                    eventClick: function(calEvent, jsEvent, view) {
                       var bookingId = calEvent.id;
                          $.ajax({
-                            url: '/get_booking_details.php',
+                            url: '/booking/get_booking_details.php',
                             type: 'GET',
                            data: { id: bookingId },
                              dataType: 'json',
@@ -79,7 +79,7 @@ if (isset($_SESSION['user_id'])) {
                                  '<p><strong>หัวข้อ:</strong> ' + data.subject + '</p>' +
                                  '<p><strong>ห้องประชุม:</strong> ' + data.room_name + '</p>' +
                                    '<p><strong>ผู้จอง:</strong> ' + data.user_first_name + ' ' + data.user_last_name + '</p>' +
-                                  '<p><strong>ฝ่าย:</strong> ' + data.department + '</p>' +
+                                  '<p><strong>ฝ่าย/งาน:</strong> ' + data.department + '</p>' +
                                    '<p><strong>เบอร์โทร:</strong> ' + data.phone + '</p>' +
                                    '<p><strong>จำนวนผู้เข้าใช้:</strong> ' + data.attendees + '</p>' +
                                    '<p><strong>เวลาเริ่ม:</strong> ' + moment(data.start_time).format('DD/MM/YYYY HH:mm') + '</p>' +
@@ -112,7 +112,7 @@ if (isset($_SESSION['user_id'])) {
              });
     </script>
            <div class="mt-3">
-                <strong>คำอธิบายสี:</strong><br>
+                <strong>คำอธิบาย:</strong><br>
               <?php foreach ($rooms as $room): ?>
                     <span class="badge" style="background-color: <?php echo $room['color']; ?>"><?php echo $room['name']; ?></span>
                <?php endforeach;?>

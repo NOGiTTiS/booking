@@ -28,9 +28,10 @@ if (isset($booking['equipment_names'])) {
 }
 ?>
 <h2>แก้ไขการจอง</h2>
-<?php if ($booking['status'] === 'pending'): ?>
+<?php if ($booking['status'] === 'pending' || $_SESSION['role'] === 'admin'): ?>
     <form action="../../controllers/booking_controller.php" method="post" enctype="multipart/form-data">
   <input type="hidden" name="id" value="<?php echo $booking['id']; ?>">
+  <input type="hidden" name="user_id" value="<?php echo $booking['user_id']; ?>">
      <div class="mb-3">
          <label for="room_id" class="form-label">ห้องประชุม</label>
          <select class="form-select" id="room_id" name="room_id" required>

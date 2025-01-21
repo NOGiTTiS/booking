@@ -71,7 +71,7 @@ function getStatusLabel($status)
         <th>หัวข้อ</th>
         <th>ห้องประชุม</th>
         <th>ผู้จอง</th>
-        <th>ฝ่าย</th>
+        <th>ฝ่าย/งาน</th>
         <th>เบอร์โทร</th>
         <th>จำนวนผู้เข้าใช้</th>
         <th>เวลาเริ่ม</th>

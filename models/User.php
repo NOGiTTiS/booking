@@ -58,6 +58,18 @@ class User
             return false;
         }
     }
+    public function changePassword($id, $newPassword)
+    {
+        try {
+            $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+            $stmt = $this->pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
+            $stmt->execute([$hashedPassword, $id]);
+            return true;
+        } catch (PDOException $e) {
+            throw new Exception("Error changing password: " . $e->getMessage());
+            return false;
+        }
+    }
 
     public function verifyPassword($password, $hashedPassword)
     {

@@ -23,7 +23,7 @@ $bookings = $bookingModel->getAllBookings($where);
             <th>หัวข้อ</th>
              <th>ห้องประชุม</th>
             <th>ผู้จอง</th>
-             <th>ฝ่าย</th>
+             <th>ฝ่าย/งาน</th>
             <th>เบอร์โทร</th>
             <th>จำนวนผู้เข้าใช้</th>
            <th>เวลาเริ่ม</th>
@@ -32,9 +32,9 @@ $bookings = $bookingModel->getAllBookings($where);
              <th>รูปแบบการจัดห้อง</th>
            <th>หมายเหตุ</th>
             <th>สถานะ</th>
-            <?php if ($_SESSION['role'] === 'admin'): ?>
-                <th>จัดการ</th>
-          <?php endif;?>
+            <th>ผู้ดำเนินการ</th>
+            <th>จัดการ</th>
+            
        </tr>
     </thead>
     <tbody>
@@ -66,13 +66,20 @@ $bookings = $bookingModel->getAllBookings($where);
                           <span class="badge bg-danger">ไม่อนุมัติ</span>
                     <?php endif;?>
                  </td>
+                 <td>
+                         <?php if(isset($booking['admin_first_name'])): ?>
+                             <?php echo $booking['admin_first_name'] . ' ' . $booking['admin_last_name']; ?>
+                          <?php else: ?>
+                              -
+                          <?php endif; ?>
+                   </td>
                       <td>
-                           <a href="/views/bookings/edit.php?id=<?php echo $booking['id']; ?>" class="btn btn-sm btn-warning">แก้ไข</a>
+                           <a href="/booking/views/bookings/edit.php?id=<?php echo $booking['id']; ?>" class="btn btn-sm btn-warning">แก้ไข</a>
                            <?php if ($_SESSION['role'] === 'admin' && $booking['status'] === 'pending'): ?>
-                                 <a href="/controllers/booking_controller.php?approve=<?php echo $booking['id']; ?>" class="btn btn-sm btn-success">อนุมัติ</a>
-                               <a href="/controllers/booking_controller.php?reject=<?php echo $booking['id']; ?>" class="btn btn-sm btn-danger">ปฏิเสธ</a>
+                                 <a href="/booking/controllers/booking_controller.php?approve=<?php echo $booking['id']; ?>" class="btn btn-sm btn-success">อนุมัติ</a>
+                               <a href="/booking/controllers/booking_controller.php?reject=<?php echo $booking['id']; ?>" class="btn btn-sm btn-danger">ปฏิเสธ</a>
                            <?php endif;?>
-                              <a href="/controllers/booking_controller.php?delete=<?php echo $booking['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('คุณต้องการลบการจองนี้หรือไม่?')">ลบ</a>
+                              <a href="/booking/controllers/booking_controller.php?delete=<?php echo $booking['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('คุณต้องการลบการจองนี้หรือไม่?')">ลบ</a>
                      </td>
             </tr>
         <?php endforeach;?>

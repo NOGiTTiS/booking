@@ -16,7 +16,7 @@ $equipmentModel = new Equipment($pdo);
 $userModel = new User($pdo);
 
 // Function to send Line Notify
-function sendLineNotify($message, $token)
+function sendLineNotify($message, $token, $userId=null)
 {
     $ch = curl_init();
     curl_setopt_array($ch, [
@@ -54,10 +54,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $roomLayoutImage = null;
         try {
             if (isset($_FILES['room_layout_image']) && $_FILES['room_layout_image']['error'] === UPLOAD_ERR_OK) {
-                $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/assets/img/room_layouts/';
+                $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/booking/assets/img/room_layouts/';
                 $uploadFile = $uploadDir . basename($_FILES['room_layout_image']['name']);
                 if (move_uploaded_file($_FILES['room_layout_image']['tmp_name'], $uploadFile)) {
-                    $roomLayoutImage = '/assets/img/room_layouts/' . basename($_FILES['room_layout_image']['name']);
+                    $roomLayoutImage = '/booking/assets/img/room_layouts/' . basename($_FILES['room_layout_image']['name']);
                 } else {
                     error_log("Error moving uploaded file");
                 }
@@ -72,9 +72,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['success_message'] = "จองห้องสำเร็จ กรุณารอการอนุมัติ";
                 header('Location: ../views/bookings/list.php');
                 // Send Line Notify notification to admin
-                $adminLineToken = 'HbTe6twxn0wll7Z117LrqltUszkjx4rAaqYtjojwB65'; // ใส่ Line Notify Token ของ Admin
+                $adminLineToken = ''; // ใส่ Line Notify Token ของ Admin
                 $message = "มีการจองห้องประชุมใหม่ รหัสการจอง: $bookingId, หัวข้อ: $subject, ห้อง: $roomId, เวลา: $startTime - $endTime";
-                $link = "/views/bookings/list.php";
+                $link = "/booking/views/bookings/list.php";
                 $message .= "\n" . "http://" . $_SERVER['HTTP_HOST'] . $link;
                 sendLineNotify($message, $adminLineToken);
                 exit();
@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     } elseif (isset($_POST['edit'])) {
         $bookingId = $_POST['id'];
-        $userId = $_SESSION['user_id'];
+        $userId = $_POST['user_id'];
         $roomId = $_POST['room_id'];
         $subject = $_POST['subject'];
         $department = $_POST['department'];
@@ -106,15 +106,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $roomLayoutImage = $booking['room_layout_image'];
 
         if (isset($_FILES['room_layout_image']) && $_FILES['room_layout_image']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/assets/img/room_layouts/';
+            $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/booking/assets/img/room_layouts/';
             $uploadFile = $uploadDir . basename($_FILES['room_layout_image']['name']);
             if (move_uploaded_file($_FILES['room_layout_image']['tmp_name'], $uploadFile)) {
-                $roomLayoutImage = '/assets/img/room_layouts/' . basename($_FILES['room_layout_image']['name']);
+                $roomLayoutImage = '/booking/assets/img/room_layouts/' . basename($_FILES['room_layout_image']['name']);
             } else {
                 error_log("Error moving uploaded file");
             }
         }
-        if ($booking['status'] !== 'pending' || $booking['user_id'] !== $userId) {
+        if ($booking['status'] !== 'pending' && $_SESSION['role'] !== 'admin') {
             $_SESSION['error_message'] = "ไม่สามารถแก้ไขการจองได้เนื่องจากได้รับการอนุมัติหรือถูกปฏิเสธแล้ว หรือไม่ใช่รายการจองของคุณ";
             header("Location: ../views/bookings/edit.php?id=$bookingId");
             exit();
@@ -148,18 +148,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $bookingId = $_GET['approve'];
         $booking = $bookingModel->getBookingById($bookingId);
         $user = $userModel->getUserById($booking['user_id']);
-        if ($bookingModel->approveBooking($bookingId)) {
-            $_SESSION['success_message'] = "อนุมัติการจองสำเร็จ";
-            header('Location: ../views/bookings/list.php');
-            // Send Line Notify notification to user
-            $userLineToken = 'HbTe6twxn0wll7Z117LrqltUszkjx4rAaqYtjojwB65'; // ใส่ Line Notify Token ของ User
-            $message = "การจองห้องประชุมของคุณ รหัสการจอง: $bookingId, หัวข้อ: {$booking['subject']} ได้รับการอนุมัติแล้ว";
-            $link = "/views/bookings/list.php";
-            $message .= "\n" . "http://" . $_SERVER['HTTP_HOST'] . $link;
-            sendLineNotify($message, $userLineToken);
-            exit();
-        } else {
-            $_SESSION['error_message'] = "ไม่สามารถอนุมัติการจองได้ กรุณาลองใหม่อีกครั้ง";
+        $adminId = $_SESSION['user_id'];
+        try{
+            if ($bookingModel->approveBooking($bookingId,$adminId)) {
+                $_SESSION['success_message'] = "อนุมัติการจองสำเร็จ";
+                header('Location: ../views/bookings/list.php');
+                // Send Line Notify notification to user
+                $userLineToken = ''; // ใส่ Line Notify Token ของ User
+                $message = "การจองห้องประชุมของคุณ รหัสการจอง: $bookingId, หัวข้อ: {$booking['subject']} ได้รับการอนุมัติแล้ว";
+                $link = "/booking/views/bookings/list.php";
+                $message .= "\n" . "http://" . $_SERVER['HTTP_HOST'] . $link;
+                sendLineNotify($message, $userLineToken);
+                exit();
+            } else {
+                $_SESSION['error_message'] = "ไม่สามารถอนุมัติการจองได้ กรุณาลองใหม่อีกครั้ง";
+                header('Location: ../views/bookings/list.php');
+                exit();
+            }
+        }catch (Exception $e) {
+            $_SESSION['error_message'] = $e->getMessage();
             header('Location: ../views/bookings/list.php');
             exit();
         }
@@ -167,13 +174,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $bookingId = $_GET['reject'];
         $booking = $bookingModel->getBookingById($bookingId);
         $user = $userModel->getUserById($booking['user_id']);
-        if ($bookingModel->rejectBooking($bookingId)) {
+        $adminId = $_SESSION['user_id'];
+        if ($bookingModel->rejectBooking($bookingId,$adminId)) {
             $_SESSION['success_message'] = "ปฏิเสธการจองสำเร็จ";
             header('Location: ../views/bookings/list.php');
             // Send Line Notify notification to user
-            $userLineToken = 'HbTe6twxn0wll7Z117LrqltUszkjx4rAaqYtjojwB65'; // ใส่ Line Notify Token ของ User
+            $userLineToken = ''; // ใส่ Line Notify Token ของ User
             $message = "การจองห้องประชุมของคุณ รหัสการจอง: $bookingId, หัวข้อ: {$booking['subject']} ถูกปฏิเสธ";
-            $link = "/views/bookings/list.php";
+            $link = "/booking/views/bookings/list.php";
             $message .= "\n" . "http://" . $_SERVER['HTTP_HOST'] . $link;
             sendLineNotify($message, $userLineToken);
             exit();

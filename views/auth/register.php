@@ -11,7 +11,7 @@ session_start();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="../assets/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" href="/assets/img/logo.png" type="image/png">
+    <link rel="icon" href="/booking/assets/img/logo.png" type="image/png">
 <style>
     body {
         background-color: #f8e8ee;
@@ -146,7 +146,7 @@ session_start();
 
 <div class="login-container">
     <div class="icon-container">
-        <img src="/assets/img/logo.png" alt="Logo">
+        <img src="/booking/assets/img/logo.png" alt="Logo">
    </div>
    <div class="form-container">
      <h2>สมัครสมาชิก</h2>
@@ -171,17 +171,16 @@ session_start();
                  <label for="email" class="form-label">อีเมล</label>
                  <input type="email" class="form-control" id="email" name="email" required>
             </div>
-           <div class="form-group">
-               <label for="phone" class="form-label">เบอร์โทรศัพท์</label>
-                <input type="text" class="form-control" id="phone" name="phone">
-           </div>
+            <div class="form-group">
+                <label for="phone" class="form-label">เบอร์โทรศัพท์</label>
+                <input type="text" class="form-control" id="phone" name="phone" minlength="10" maxlength="10" pattern="[0-9]{10}" title="กรุณาใส่เบอร์โทรศัพท์ 10 หลัก" required>
+             </div>
             <button type="submit" class="btn btn-primary" name="register">สมัครสมาชิก</button>
            <div class="login-link">
-                 <a href="/views/auth/login.php">มีบัญชีอยู่แล้ว? เข้าสู่ระบบ</a>
+                 <a href="/booking/views/auth/login.php">มีบัญชีอยู่แล้ว? เข้าสู่ระบบ</a>
             </div>
          </form>
    </div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
