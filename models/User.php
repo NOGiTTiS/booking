@@ -71,6 +71,19 @@ class User
         }
     }
 
+    public function resetPassword($id) {
+        try {
+           $defaultPassword = "password123";
+         $hashedPassword = password_hash($defaultPassword, PASSWORD_DEFAULT);
+            $stmt = $this->pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
+             $stmt->execute([$hashedPassword, $id]);
+            return true;
+        } catch (PDOException $e) {
+             throw new Exception("Error resetting password: " . $e->getMessage());
+            return false;
+       }
+   }
+
     public function verifyPassword($password, $hashedPassword)
     {
         return password_verify($password, $hashedPassword);

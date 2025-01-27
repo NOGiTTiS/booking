@@ -152,10 +152,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
     }
-}
-
-if (isset($_GET['logout'])) {
-    session_destroy();
-    header('Location: ../index.php');
-    exit();
+    if (isset($_GET['reset_password'])) {
+        $id = $_GET['reset_password'];
+         try {
+            if ($userModel->resetPassword($id)) {
+                $_SESSION['success_message'] = "รีเซ็ตรหัสผ่านผู้ใช้สำเร็จ";
+                header('Location: ../views/admin/user_management.php');
+                exit();
+            } else {
+                 $_SESSION['error_message'] = "ไม่สามารถรีเซ็ตรหัสผ่านได้ กรุณาลองใหม่อีกครั้ง";
+                header('Location: ../views/admin/user_management.php');
+                 exit();
+           }
+       } catch (Exception $e) {
+            $_SESSION['error_message'] =  $e->getMessage();
+            header('Location: ../views/admin/user_management.php');
+             exit();
+       }
+    }
 }

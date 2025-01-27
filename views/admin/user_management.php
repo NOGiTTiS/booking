@@ -37,6 +37,7 @@ $users = $userModel->getAllUsers();
                 <td>
                     <a href="user_edit.php?id=<?php echo $user['id']; ?>" class="btn btn-sm btn-warning">แก้ไข</a>
                     <a href="../../controllers/auth_controller.php?delete_user=<?php echo $user['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('คุณต้องการลบผู้ใช้งานนี้หรือไม่?')">ลบ</a>
+                    <a href="../../controllers/auth_controller.php?reset_password=<?php echo $user['id']; ?>" class="btn btn-sm btn-info" onclick="return confirm('คุณต้องการรีเซ็ตรหัสผ่านผู้ใช้งานนี้หรือไม่?')">รีเซ็ตรหัสผ่าน</a>
                 </td>
             </tr>
         <?php endforeach;?>
