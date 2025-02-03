@@ -16,7 +16,7 @@ $equipmentModel = new Equipment($pdo);
 $userModel = new User($pdo);
 
 // Function to send Line Notify
-function sendLineNotify($message, $token, $userId=null)
+function sendLineNotify($message, $token, $userId = null)
 {
     $ch = curl_init();
     curl_setopt_array($ch, [
@@ -61,6 +61,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } else {
                     error_log("Error moving uploaded file");
                 }
+            }
+            $now = new DateTime();
+            $startDateTime = new DateTime($startTime);
+            $interval = $now->diff($startDateTime);
+            if ($_SESSION['role'] !== 'admin' && $interval->days < 1) {
+                $_SESSION['error_message'] = "ต้องจองล่วงหน้าอย่างน้อย 1 วัน";
+                header("Location: ../views/bookings/create.php");
+                exit();
             }
             if ($bookingModel->checkBookingAvailability($roomId, $startTime, $endTime)) {
                 $_SESSION['error_message'] = "ไม่สามารถจองห้องได้ เนื่องจากช่วงเวลาดังกล่าวไม่ว่าง กรุณาเลือกช่วงเวลาอื่น";
@@ -149,8 +157,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $booking = $bookingModel->getBookingById($bookingId);
         $user = $userModel->getUserById($booking['user_id']);
         $adminId = $_SESSION['user_id'];
-        try{
-            if ($bookingModel->approveBooking($bookingId,$adminId)) {
+        try {
+            if ($bookingModel->approveBooking($bookingId, $adminId)) {
                 $_SESSION['success_message'] = "อนุมัติการจองสำเร็จ";
                 header('Location: ../views/bookings/list.php');
                 // Send Line Notify notification to user
@@ -165,7 +173,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header('Location: ../views/bookings/list.php');
                 exit();
             }
-        }catch (Exception $e) {
+        } catch (Exception $e) {
             $_SESSION['error_message'] = $e->getMessage();
             header('Location: ../views/bookings/list.php');
             exit();
@@ -175,7 +183,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $booking = $bookingModel->getBookingById($bookingId);
         $user = $userModel->getUserById($booking['user_id']);
         $adminId = $_SESSION['user_id'];
-        if ($bookingModel->rejectBooking($bookingId,$adminId)) {
+        if ($bookingModel->rejectBooking($bookingId, $adminId)) {
             $_SESSION['success_message'] = "ปฏิเสธการจองสำเร็จ";
             header('Location: ../views/bookings/list.php');
             // Send Line Notify notification to user

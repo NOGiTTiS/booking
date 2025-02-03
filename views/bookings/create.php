@@ -67,26 +67,15 @@ $equipments = $equipmentModel->getAllEquipments();
 </form>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
-        var startTimeInput = document.getElementById('start_time');
-        var endTimeInput = document.getElementById('end_time');
-        var now = new Date();
-        var tomorrow = new Date(now);
-        tomorrow.setDate(now.getDate() + 1);
-      
-        var tomorrowISO = tomorrow.toISOString().slice(0, 16);
-       
-       startTimeInput.setAttribute('min', tomorrowISO);
-       endTimeInput.setAttribute('min', tomorrowISO);
-        var defaultStartTime = new Date(tomorrow);
-        defaultStartTime.setHours(8); // Set default start time to 8:00
-        defaultStartTime.setMinutes(0); // Set default start minute to 00
-        startTimeInput.value = defaultStartTime.toISOString().slice(0, 16);
-        var defaultEndTime = new Date(defaultStartTime);
-       defaultEndTime.setHours(16);  // Set default end time to 16:00
-       defaultEndTime.setMinutes(0);
-       endTimeInput.value = defaultEndTime.toISOString().slice(0, 16);
-   });
-  </script>
+     document.addEventListener('DOMContentLoaded', function () {
+           var startTimeInput = document.getElementById('start_time');
+          var now = new Date();
+            now.setDate(now.getDate() + 1); //set to tomorrow
+            var minDateTime = now.toISOString().slice(0, 16);
+           if(startTimeInput && "<?php echo $_SESSION['role'] ?>" !== "admin"){
+              startTimeInput.setAttribute('min', minDateTime);
+           }
+     });
+ </script>
 
 <?php include '../layouts/footer.php';?>

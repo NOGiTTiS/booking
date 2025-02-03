@@ -34,17 +34,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (isset($_POST['login'])) {
         $username = $_POST['username'];
         $password = $_POST['password'];
+        $rememberMe = isset($_POST['remember']);
+
         $user = $userModel->getUserByUsername($username);
 
         if ($user && $userModel->verifyPassword($password, $user['password'])) {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['role'] = $user['role'];
+
+            if ($rememberMe) {
+                setcookie('remember_username', $username, time() + (86400 * 30), "/"); // Cookie lasts for 30 days
+                setcookie('remember_password', $password, time() + (86400 * 30), "/");
+            } else {
+                setcookie('remember_username', '', time() - 3600, "/");
+                setcookie('remember_password', '', time() - 3600, "/");
+            }
             header('Location: ../index.php');
             exit();
         } else {
             $_SESSION['error_message'] = 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
-            session_destroy();
             header('Location: ../views/auth/login.php');
             exit();
         }
@@ -154,20 +163,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if (isset($_GET['reset_password'])) {
         $id = $_GET['reset_password'];
-         try {
+        try {
             if ($userModel->resetPassword($id)) {
                 $_SESSION['success_message'] = "รีเซ็ตรหัสผ่านผู้ใช้สำเร็จ";
                 header('Location: ../views/admin/user_management.php');
                 exit();
             } else {
-                 $_SESSION['error_message'] = "ไม่สามารถรีเซ็ตรหัสผ่านได้ กรุณาลองใหม่อีกครั้ง";
+                $_SESSION['error_message'] = "ไม่สามารถรีเซ็ตรหัสผ่านได้ กรุณาลองใหม่อีกครั้ง";
                 header('Location: ../views/admin/user_management.php');
-                 exit();
-           }
-       } catch (Exception $e) {
-            $_SESSION['error_message'] =  $e->getMessage();
+                exit();
+            }
+        } catch (Exception $e) {
+            $_SESSION['error_message'] = $e->getMessage();
             header('Location: ../views/admin/user_management.php');
-             exit();
-       }
+            exit();
+        }
     }
 }

@@ -36,8 +36,8 @@ if (isset($booking['equipment_names'])) {
          <label for="room_id" class="form-label">ห้องประชุม</label>
          <select class="form-select" id="room_id" name="room_id" required>
              <?php foreach ($rooms as $room): ?>
-                 <option value="<?php echo $room['id']; ?>" <?php echo ($room['id'] == $booking['room_id']) ? 'selected' : ''; ?>><?php echo $room['name']; ?></option>
-             <?php endforeach;?>
+                 <option value="<?php echo $room['id']; ?>" <?php echo($room['id'] == $booking['room_id']) ? 'selected' : ''; ?>><?php echo $room['name']; ?></option>
+             <?php endforeach; ?>
          </select>
      </div>
     <div class="mb-3">
@@ -56,13 +56,13 @@ if (isset($booking['equipment_names'])) {
          <label for="attendees" class="form-label">จำนวนผู้เข้าใช้</label>
          <input type="number" class="form-control" id="attendees" name="attendees" value="<?php echo $booking['attendees']; ?>" required>
      </div>
-    <div class="mb-3">
-         <label for="start_time" class="form-label">วันที่เริ่ม</label>
-         <input type="datetime-local" class="form-control" id="start_time" name="start_time" value="<?php echo date('Y-m-d\TH:i', strtotime($booking['start_time'])); ?>" required>
-    </div>
      <div class="mb-3">
-         <label for="end_time" class="form-label">วันที่สิ้นสุด</label>
-         <input type="datetime-local" class="form-control" id="end_time" name="end_time"  value="<?php echo date('Y-m-d\TH:i', strtotime($booking['end_time'])); ?>" required>
+         <label for="start_time" class="form-label">เวลาเริ่ม</label>
+         <input type="datetime-local" class="form-control" id="start_time" name="start_time" value="<?php echo date('Y-m-d\TH:i', strtotime($booking['start_time'])); ?>" required>
+       </div>
+    <div class="mb-3">
+        <label for="end_time" class="form-label">เวลาสิ้นสุด</label>
+        <input type="datetime-local" class="form-control" id="end_time" name="end_time"  value="<?php echo date('Y-m-d\TH:i', strtotime($booking['end_time'])); ?>" required>
     </div>
      <div class="mb-3">
         <label class="form-label">อุปกรณ์</label>
@@ -71,7 +71,7 @@ if (isset($booking['equipment_names'])) {
                  <input type="checkbox" class="form-check-input" name="equipments[]" value="<?php echo $equipment['id']; ?>" id="equipment_<?php echo $equipment['id']; ?>" <?php echo in_array($equipment['name'], $selectedEquipments) ? 'checked' : ''; ?>>
                 <label class="form-check-label" for="equipment_<?php echo $equipment['id']; ?>"><?php echo $equipment['name']; ?></label>
             </div>
-         <?php endforeach;?>
+         <?php endforeach; ?>
      </div>
      <div class="mb-3">
           <label for="room_layout_image" class="form-label">รูปแบบการจัดห้อง (ไฟล์รูปภาพ)</label>
@@ -85,28 +85,17 @@ if (isset($booking['equipment_names'])) {
 </form>
    <?php else: ?>
       <p class="alert alert-info">ไม่สามารถแก้ไขการจองได้เนื่องจากได้รับการอนุมัติหรือถูกปฏิเสธแล้ว</p>
-   <?php endif;?>
+   <?php endif; ?>
 
    <script>
-    document.addEventListener("DOMContentLoaded", function() {
-          var startTimeInput = document.getElementById('start_time');
-          var endTimeInput = document.getElementById('end_time');
-        var now = new Date();
-        var tomorrow = new Date(now);
-        tomorrow.setDate(now.getDate() + 1);
-      
-        var tomorrowISO = tomorrow.toISOString().slice(0, 16);
-       
-       startTimeInput.setAttribute('min', tomorrowISO);
-       endTimeInput.setAttribute('min', tomorrowISO);
-         var defaultStartTime = new Date(tomorrow);
-        defaultStartTime.setHours(8); // Set default start time to 8:00
-       defaultStartTime.setMinutes(0);
-       startTimeInput.value = defaultStartTime.toISOString().slice(0, 16);
-        var defaultEndTime = new Date(defaultStartTime);
-      defaultEndTime.setHours(16);  // Set default end time to 16:00
-        defaultEndTime.setMinutes(0);
-        endTimeInput.value = defaultEndTime.toISOString().slice(0, 16);
-    });
-  </script>
-<?php include '../layouts/footer.php';?>
+     document.addEventListener('DOMContentLoaded', function () {
+           var startTimeInput = document.getElementById('start_time');
+          var now = new Date();
+            now.setDate(now.getDate() + 1); //set to tomorrow
+            var minDateTime = now.toISOString().slice(0, 16);
+           if(startTimeInput && "<?php echo $_SESSION['role'] ?>" !== "admin"){
+              startTimeInput.setAttribute('min', minDateTime);
+           }
+     });
+ </script>
+<?php include '../layouts/footer.php'; ?>
