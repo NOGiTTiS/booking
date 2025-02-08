@@ -38,11 +38,11 @@ $equipments = $equipmentModel->getAllEquipments();
     </div>
     <div class="mb-3">
         <label for="start_time" class="form-label">วันที่เริ่ม</label>
-        <input type="datetime-local" class="form-control" id="start_time" name="start_time" required>
+        <input type="datetime-local" class="form-control" id="start_time" name="start_time" required onkeydown="return false" onpaste="return false">
     </div>
     <div class="mb-3">
         <label for="end_time" class="form-label">วันที่สิ้นสุด</label>
-        <input type="datetime-local" class="form-control" id="end_time" name="end_time" required>
+        <input type="datetime-local" class="form-control" id="end_time" name="end_time" required onkeydown="return false" onpaste="return false">
     </div>
       <div class="mb-3">
         <label class="form-label">อุปกรณ์</label>
@@ -68,13 +68,17 @@ $equipments = $equipmentModel->getAllEquipments();
 
 <script>
      document.addEventListener('DOMContentLoaded', function () {
-           var startTimeInput = document.getElementById('start_time');
-          var now = new Date();
+            var startTimeInput = document.getElementById('start_time');
+            var endTimeInput = document.getElementById('end_time');
+            var now = new Date();
             now.setDate(now.getDate() + 1); //set to tomorrow
             var minDateTime = now.toISOString().slice(0, 16);
-           if(startTimeInput && "<?php echo $_SESSION['role'] ?>" !== "admin"){
-              startTimeInput.setAttribute('min', minDateTime);
-           }
+            if(startTimeInput && "<?php echo $_SESSION['role'] ?>" !== "admin"){
+                startTimeInput.setAttribute('min', minDateTime);
+            }
+            if(endTimeInput && "<?php echo $_SESSION['role'] ?>" !== "admin"){
+                endTimeInput.setAttribute('min', minDateTime);
+            }
      });
  </script>
 

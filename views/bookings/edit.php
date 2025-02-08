@@ -58,11 +58,11 @@ if (isset($booking['equipment_names'])) {
      </div>
      <div class="mb-3">
          <label for="start_time" class="form-label">เวลาเริ่ม</label>
-         <input type="datetime-local" class="form-control" id="start_time" name="start_time" value="<?php echo date('Y-m-d\TH:i', strtotime($booking['start_time'])); ?>" required>
+         <input type="datetime-local" class="form-control" id="start_time" name="start_time" value="<?php echo date('Y-m-d\TH:i', strtotime($booking['start_time'])); ?>" required onkeydown="return false" onpaste="return false">
        </div>
     <div class="mb-3">
         <label for="end_time" class="form-label">เวลาสิ้นสุด</label>
-        <input type="datetime-local" class="form-control" id="end_time" name="end_time"  value="<?php echo date('Y-m-d\TH:i', strtotime($booking['end_time'])); ?>" required>
+        <input type="datetime-local" class="form-control" id="end_time" name="end_time"  value="<?php echo date('Y-m-d\TH:i', strtotime($booking['end_time'])); ?>" required onkeydown="return false" onpaste="return false">
     </div>
      <div class="mb-3">
         <label class="form-label">อุปกรณ์</label>

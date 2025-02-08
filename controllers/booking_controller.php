@@ -6,55 +6,65 @@ require_once '../models/Room.php';
 require_once '../models/Equipment.php';
 require_once '../models/User.php';
 
-if (!isset($_SESSION['user_id'])) {
+if (! isset($_SESSION['user_id'])) {
     header('Location: ../views/auth/login.php');
     exit();
 }
-$bookingModel = new Booking($pdo);
-$roomModel = new Room($pdo);
+$bookingModel   = new Booking($pdo);
+$roomModel      = new Room($pdo);
 $equipmentModel = new Equipment($pdo);
-$userModel = new User($pdo);
+$userModel      = new User($pdo);
 
-// Function to send Line Notify
-function sendLineNotify($message, $token, $userId = null)
-{
+// Function to send Telegram message
+function sendTelegramMessage($message, $chatId, $botToken) {
+    $url = "https://api.telegram.org/bot" . $botToken . "/sendMessage";
+    $data = [
+        'chat_id' => $chatId,
+        'text' => $message,
+        'parse_mode' => 'HTML' // ใช้ HTML formatting ได้
+    ];
+
+    $options = [
+        CURLOPT_URL => $url,
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => $data,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_SSL_VERIFYPEER => false, // ไม่แนะนำให้ใช้ใน production จริง, ควรตั้งค่า SSL ให้ถูกต้อง
+    ];
+
     $ch = curl_init();
-    curl_setopt_array($ch, [
-        CURLOPT_URL => 'https://notify-api.line.me/api/notify',
-        CURLOPT_SSL_VERIFYPEER => 0,
-        CURLOPT_POST => 1,
-        CURLOPT_POSTFIELDS => http_build_query(['message' => $message]),
-        CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $token],
-        CURLOPT_RETURNTRANSFER => 1,
-    ]);
-    $result = curl_exec($ch);
-    curl_close($ch);
-    if ($result !== false) {
-        // Log successful response
-        error_log("Line Notify sent successfully. Response: " . $result);
+    curl_setopt_array($ch, $options);
+    $response = curl_exec($ch);
+
+    if ($response === false) {
+        error_log("Telegram API Error: " . curl_error($ch));
     } else {
-        // Log curl error
-        error_log("Error sending Line Notify: " . curl_error($ch));
+        $responseData = json_decode($response, true);
+        if ($responseData === null || !$responseData['ok']) {
+            error_log("Telegram API Response Error: " . print_r($responseData, true));
+        }
     }
+    curl_close($ch);
 }
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['create'])) {
         // code สำหรับการสร้างการจอง
-        $userId = $_SESSION['user_id'];
-        $roomId = $_POST['room_id'];
-        $subject = $_POST['subject'];
-        $department = $_POST['department'];
-        $phone = $_POST['phone'];
-        $attendees = $_POST['attendees'];
-        $startTime = $_POST['start_time'];
-        $endTime = $_POST['end_time'];
-        $equipmentIds = isset($_POST['equipments']) ? $_POST['equipments'] : [];
-        $note = $_POST['note'];
+        $userId          = $_SESSION['user_id'];
+        $roomId          = $_POST['room_id'];
+        $subject         = $_POST['subject'];
+        $department      = $_POST['department'];
+        $phone           = $_POST['phone'];
+        $attendees       = $_POST['attendees'];
+        $startTime       = $_POST['start_time'];
+        $endTime         = $_POST['end_time'];
+        $equipmentIds    = isset($_POST['equipments']) ? $_POST['equipments'] : [];
+        $note            = $_POST['note'];
         $roomLayoutImage = null;
         try {
             if (isset($_FILES['room_layout_image']) && $_FILES['room_layout_image']['error'] === UPLOAD_ERR_OK) {
-                $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/booking/assets/img/room_layouts/';
+                $uploadDir  = $_SERVER['DOCUMENT_ROOT'] . '/booking/assets/img/room_layouts/';
                 $uploadFile = $uploadDir . basename($_FILES['room_layout_image']['name']);
                 if (move_uploaded_file($_FILES['room_layout_image']['tmp_name'], $uploadFile)) {
                     $roomLayoutImage = '/booking/assets/img/room_layouts/' . basename($_FILES['room_layout_image']['name']);
@@ -62,9 +72,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     error_log("Error moving uploaded file");
                 }
             }
-            $now = new DateTime();
+            $now           = new DateTime();
             $startDateTime = new DateTime($startTime);
-            $interval = $now->diff($startDateTime);
+            $interval      = $now->diff($startDateTime);
             if ($_SESSION['role'] !== 'admin' && $interval->days < 1) {
                 $_SESSION['error_message'] = "ต้องจองล่วงหน้าอย่างน้อย 1 วัน";
                 header("Location: ../views/bookings/create.php");
@@ -77,15 +87,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if ($bookingId = $bookingModel->createBooking($userId, $roomId, $subject, $department, $phone, $attendees, $startTime, $endTime, $equipmentIds, $note, $roomLayoutImage)) {
-                $_SESSION['success_message'] = "จองห้องสำเร็จ กรุณารอการอนุมัติ";
+                $_SESSION['success_message'] = "จองห้องสำเร็จ กรุณารอการอนุมัติ" . $message;
                 header('Location: ../views/bookings/list.php');
-                // Send Line Notify notification to admin
-                $adminLineToken = ''; // ใส่ Line Notify Token ของ Admin
-                $message = "มีการจองห้องประชุมใหม่ รหัสการจอง: $bookingId, หัวข้อ: $subject, ห้อง: $roomId, เวลา: $startTime - $endTime";
+                // Send Telegram notification to admin                
+                $room = $roomModel->getRoomById($roomId);
+                $roomName = $room ? $room['name'] : "Unknown Room"; // Handle case where room might not exist
                 $link = "/booking/views/bookings/list.php";
-                $message .= "\n" . "http://" . $_SERVER['HTTP_HOST'] . $link;
-                sendLineNotify($message, $adminLineToken);
-                exit();
+                $message = urlencode("มีการจองห้องประชุมใหม่\n"
+                        . "รหัสการจอง: " . $bookingId . "\n"
+                        . "หัวข้อ: " . htmlspecialchars($subject) . "\n"  // Use htmlspecialchars for safety
+                        . "ห้อง: " . htmlspecialchars($roomName) . "\n"
+                        . "เวลา: " . htmlspecialchars($startTime) . " - " . htmlspecialchars($endTime) . "\n"
+                        . "ผู้จอง: " . htmlspecialchars($_SESSION['username']) . "\n"
+                        . "ฝ่าย/งาน: " . htmlspecialchars($department) . "\n"
+                        . "เบอร์โทร: " . htmlspecialchars($phone) . "\n"
+                        . "จำนวนผู้เข้าใช้: " . htmlspecialchars($attendees) . "\n"
+                       . "หมายเหตุ: " . htmlspecialchars($note));
+
+                $adminChatId = '-4765744081';  // *** เปลี่ยนเป็น Chat ID ของแอดมิน ***
+                $botToken = '7760198064:AAFQFHyMPNoZv99ovHp6Jl5FfSZbYN_WDtI';  // *** เปลี่ยนเป็น Bot Token ของคุณ ***
+                $url="https://api.telegram.org/bot$botToken/sendMessage?text=$message&chat_id=$adminChatId";
+                $ch=curl_init();
+                curl_setopt($ch,CURLOPT_URL,$url);
+                curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
+                $result=curl_exec($ch);
+                curl_close($ch);
+                echo "<pre>";
+                print_r($result);
+              exit();
+
             } else {
                 $_SESSION['error_message'] = "ไม่สามารถจองห้องได้ กรุณาลองใหม่อีกครั้ง";
                 header("Location: ../views/bookings/create.php");
@@ -99,22 +129,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
     } elseif (isset($_POST['edit'])) {
-        $bookingId = $_POST['id'];
-        $userId = $_POST['user_id'];
-        $roomId = $_POST['room_id'];
-        $subject = $_POST['subject'];
-        $department = $_POST['department'];
-        $phone = $_POST['phone'];
-        $attendees = $_POST['attendees'];
-        $startTime = $_POST['start_time'];
-        $endTime = $_POST['end_time'];
-        $equipmentIds = isset($_POST['equipments']) ? $_POST['equipments'] : [];
-        $note = $_POST['note'];
-        $booking = $bookingModel->getBookingById($bookingId);
+        $bookingId       = $_POST['id'];
+        $userId          = $_POST['user_id'];
+        $roomId          = $_POST['room_id'];
+        $subject         = $_POST['subject'];
+        $department      = $_POST['department'];
+        $phone           = $_POST['phone'];
+        $attendees       = $_POST['attendees'];
+        $startTime       = $_POST['start_time'];
+        $endTime         = $_POST['end_time'];
+        $equipmentIds    = isset($_POST['equipments']) ? $_POST['equipments'] : [];
+        $note            = $_POST['note'];
+        $booking         = $bookingModel->getBookingById($bookingId);
         $roomLayoutImage = $booking['room_layout_image'];
 
         if (isset($_FILES['room_layout_image']) && $_FILES['room_layout_image']['error'] === UPLOAD_ERR_OK) {
-            $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/booking/assets/img/room_layouts/';
+            $uploadDir  = $_SERVER['DOCUMENT_ROOT'] . '/booking/assets/img/room_layouts/';
             $uploadFile = $uploadDir . basename($_FILES['room_layout_image']['name']);
             if (move_uploaded_file($_FILES['room_layout_image']['tmp_name'], $uploadFile)) {
                 $roomLayoutImage = '/booking/assets/img/room_layouts/' . basename($_FILES['room_layout_image']['name']);
@@ -154,19 +184,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
     if (isset($_GET['approve'])) {
         $bookingId = $_GET['approve'];
-        $booking = $bookingModel->getBookingById($bookingId);
-        $user = $userModel->getUserById($booking['user_id']);
-        $adminId = $_SESSION['user_id'];
+        $booking   = $bookingModel->getBookingById($bookingId);
+        $user      = $userModel->getUserById($booking['user_id']);
+        $adminId   = $_SESSION['user_id'];
         try {
             if ($bookingModel->approveBooking($bookingId, $adminId)) {
                 $_SESSION['success_message'] = "อนุมัติการจองสำเร็จ";
                 header('Location: ../views/bookings/list.php');
-                // Send Line Notify notification to user
-                $userLineToken = ''; // ใส่ Line Notify Token ของ User
-                $message = "การจองห้องประชุมของคุณ รหัสการจอง: $bookingId, หัวข้อ: {$booking['subject']} ได้รับการอนุมัติแล้ว";
-                $link = "/booking/views/bookings/list.php";
-                $message .= "\n" . "http://" . $_SERVER['HTTP_HOST'] . $link;
-                sendLineNotify($message, $userLineToken);
                 exit();
             } else {
                 $_SESSION['error_message'] = "ไม่สามารถอนุมัติการจองได้ กรุณาลองใหม่อีกครั้ง";
@@ -180,18 +204,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } elseif (isset($_GET['reject'])) {
         $bookingId = $_GET['reject'];
-        $booking = $bookingModel->getBookingById($bookingId);
-        $user = $userModel->getUserById($booking['user_id']);
-        $adminId = $_SESSION['user_id'];
+        $booking   = $bookingModel->getBookingById($bookingId);
+        $user      = $userModel->getUserById($booking['user_id']);
+        $adminId   = $_SESSION['user_id'];
         if ($bookingModel->rejectBooking($bookingId, $adminId)) {
             $_SESSION['success_message'] = "ปฏิเสธการจองสำเร็จ";
             header('Location: ../views/bookings/list.php');
-            // Send Line Notify notification to user
-            $userLineToken = ''; // ใส่ Line Notify Token ของ User
-            $message = "การจองห้องประชุมของคุณ รหัสการจอง: $bookingId, หัวข้อ: {$booking['subject']} ถูกปฏิเสธ";
-            $link = "/booking/views/bookings/list.php";
-            $message .= "\n" . "http://" . $_SERVER['HTTP_HOST'] . $link;
-            sendLineNotify($message, $userLineToken);
             exit();
         } else {
             $_SESSION['error_message'] = "ไม่สามารถปฏิเสธการจองได้ กรุณาลองใหม่อีกครั้ง";
