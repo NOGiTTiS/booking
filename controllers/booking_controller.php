@@ -111,7 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     . "เบอร์โทร: " . htmlspecialchars($phone) . "\n"
                     . "จำนวนผู้เข้าใช้: " . htmlspecialchars($attendees) . "\n"
                     . "หมายเหตุ: " . htmlspecialchars($note) . "\n"
-                    . $host
+                    . "ตรวจสอบ: " . $host
                 );
 
                 $adminChatId = '-4765744081';                                    // *** เปลี่ยนเป็น Chat ID ของแอดมิน ***
