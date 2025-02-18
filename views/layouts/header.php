@@ -34,9 +34,18 @@
 
        .navbar-dark .navbar-nav .nav-link {
             color: #000; /* เปลี่ยนสีข้อความเป็นสีดำ */
-          }
-         .navbar-brand {
+       }
+
+       .navbar-brand {
             color: #000; /* เปลี่ยนสีชื่อแบรนด์เป็นสีดำ */
+       }
+
+       .navbar-dark .navbar-nav .nav-link:hover {
+        color: #fff; /* Darker Pink on Hover */
+       }
+
+       .dropdown-menu {
+        background-color: #f8d7e9;
        }
 
        #cal{
@@ -47,6 +56,8 @@
         background-color: #ddd;
        }
        </style>
+
+
  </head>
  
  <body>
@@ -73,20 +84,20 @@
                                    รายงาน
                                </a>
                                <ul class="dropdown-menu" aria-labelledby="reportDropdown">
-                                    <li><a class="dropdown-item" href="/booking/views/reports/booking_report.php">รายงานห้องประชุม</a></li>
-                                    <li><a class="dropdown-item" href="/booking/views/reports/user_booking_report.php">รายงานผู้ใช้งาน</a></li>
-                                </ul>
+                                  <li class="nav-item"><a class="nav-link" href="/booking/views/reports/booking_report.php">รายงานห้องประชุม</a></li>
+                                  <li class="nav-item"><a class="nav-link" href="/booking/views/reports/user_booking_report.php">รายงานผู้ใช้งาน</a></li>
+                               </ul>
                          </li>
                         <li class="nav-item dropdown">
                                <a class="nav-link dropdown-toggle" href="#" id="reportDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                    จัดการระบบ
                                </a>
                                <ul class="dropdown-menu" aria-labelledby="reportDropdown">
-                               <li class="nav-item"><a class="nav-link" href="/booking/views/admin/dashboard.php">แดชบอร์ด</a></li>
-                               <li class="nav-item"><a class="nav-link" href="/booking/views/rooms/list.php">ห้องประชุม</a></li>
-                               <li class="nav-item"><a class="nav-link" href="/booking/views/equipments/list.php">อุปกรณ์</a></li>
-                               <li class="nav-item"><a class="nav-link" href="/booking/views/admin/user_management.php">จัดการผู้ใช้งาน</a></li>
-                               <li class="nav-item"><a class="nav-link" href="/booking/views/admin/settings.php">ตั้งค่าระบบ</a></li>
+                                  <li class="nav-item"><a class="nav-link" href="/booking/views/admin/dashboard.php">แดชบอร์ด</a></li>
+                                  <li class="nav-item"><a class="nav-link" href="/booking/views/rooms/list.php">ห้องประชุม</a></li>
+                                  <li class="nav-item"><a class="nav-link" href="/booking/views/equipments/list.php">อุปกรณ์</a></li>
+                                  <li class="nav-item"><a class="nav-link" href="/booking/views/admin/user_management.php">จัดการผู้ใช้งาน</a></li>
+                                  <li class="nav-item"><a class="nav-link" href="/booking/views/admin/settings.php">ตั้งค่าระบบ</a></li>
                                </ul>
                       <?php endif; ?>
 
