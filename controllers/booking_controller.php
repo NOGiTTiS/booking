@@ -98,7 +98,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Send Telegram notification to admin
                 $room     = $roomModel->getRoomById($roomId);
                 $roomName = $room ? $room['name'] : "Unknown Room"; // Handle case where room might not exist
-                $link     = "/booking/views/bookings/list.php";
+                //$host = $_SERVER['DOCUMENT_ROOT'] . '/booking/views/bookings/list.php';
+                $host = 'http://61.19.112.82/booking/views/bookings/list.php';
+                $link     = "<a href='http://$host'</a>";
                 $message  = urlencode("มีการจองห้องประชุมใหม่\n"
                     . "รหัสการจอง: " . $bookingId . "\n"
                     . "หัวข้อ: " . htmlspecialchars($subject) . "\n" // Use htmlspecialchars for safety
@@ -108,7 +110,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     . "ฝ่าย/งาน: " . htmlspecialchars($department) . "\n"
                     . "เบอร์โทร: " . htmlspecialchars($phone) . "\n"
                     . "จำนวนผู้เข้าใช้: " . htmlspecialchars($attendees) . "\n"
-                    . "หมายเหตุ: " . htmlspecialchars($note));
+                    . "หมายเหตุ: " . htmlspecialchars($note) . "\n"
+                    . $host
+                );
 
                 $adminChatId = '-4765744081';                                    // *** เปลี่ยนเป็น Chat ID ของแอดมิน ***
                 $botToken    = '7760198064:AAFQFHyMPNoZv99ovHp6Jl5FfSZbYN_WDtI'; // *** เปลี่ยนเป็น Bot Token ของคุณ ***
