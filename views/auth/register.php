@@ -144,6 +144,8 @@ session_start();
     }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.18/dist/sweetalert2.all.min.js"></script>
+
 <div class="login-container">
     <div class="icon-container">
         <img src="/booking/assets/img/logo.png" alt="Logo">
@@ -182,5 +184,29 @@ session_start();
          </form>
    </div>
 </div>
+
+<?php if(isset($_SESSION['success_message'])): ?>
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'สำเร็จ!',
+               text: "<?php echo $_SESSION['success_message']; ?>",
+                timer: 2500,
+               showConfirmButton: false
+            });
+        </script>
+    <?php unset($_SESSION['success_message']); ?>
+<?php endif; ?>
+  <?php if(isset($_SESSION['error_message'])): ?>
+       <script>
+            Swal.fire({
+                icon: 'error',
+                 title: 'เกิดข้อผิดพลาด!',
+                text: "<?php echo $_SESSION['error_message']; ?>",
+             });
+        </script>
+     <?php unset($_SESSION['error_message']); ?>
+ <?php endif; ?>
+
 </body>
 </html>

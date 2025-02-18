@@ -1,7 +1,7 @@
 <?php
-session_start();
-$username = isset($_COOKIE['remember_username']) ? $_COOKIE['remember_username'] : '';
-$password = isset($_COOKIE['remember_password']) ? $_COOKIE['remember_password'] : '';
+    session_start();
+    $username = isset($_COOKIE['remember_username']) ? $_COOKIE['remember_username'] : '';
+    $password = isset($_COOKIE['remember_password']) ? $_COOKIE['remember_password'] : '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -146,12 +146,14 @@ $password = isset($_COOKIE['remember_password']) ? $_COOKIE['remember_password']
     }
 </style>
 
- <div class="login-container">
-   <div class="icon-container">
-        <img src="/booking/assets/img/logo.png" alt="Logo">
-    </div>
-   <div class="form-container">
-       <h2>เข้าสู่ระบบ</h2>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.18/dist/sweetalert2.all.min.js"></script>
+
+<div class="login-container">
+  <div class="icon-container">
+    <img src="/booking/assets/img/logo.png" alt="Logo">
+  </div>
+  <div class="form-container">
+    <h2>เข้าสู่ระบบ</h2>
            <form action="../../controllers/auth_controller.php" method="post">
                <div class="form-group">
                  <label for="username" class="form-label">ชื่อผู้ใช้</label>
@@ -173,5 +175,29 @@ $password = isset($_COOKIE['remember_password']) ? $_COOKIE['remember_password']
          </form>
     </div>
 </div>
+
+<?php if(isset($_SESSION['success_message'])): ?>
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: 'สำเร็จ!',
+               text: "<?php echo $_SESSION['success_message']; ?>",
+                timer: 2500,
+               showConfirmButton: false
+            });
+        </script>
+    <?php unset($_SESSION['success_message']); ?>
+<?php endif; ?>
+  <?php if(isset($_SESSION['error_message'])): ?>
+       <script>
+            Swal.fire({
+                icon: 'error',
+                 title: 'เกิดข้อผิดพลาด!',
+                text: "<?php echo $_SESSION['error_message']; ?>",
+             });
+        </script>
+     <?php unset($_SESSION['error_message']); ?>
+ <?php endif; ?>
+ 
 </body>
 </html>

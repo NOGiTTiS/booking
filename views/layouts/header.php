@@ -10,6 +10,7 @@
      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/3.10.2/fullcalendar.min.css" />
      <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
      <link rel="icon" href="/booking/assets/img/logo.png" type="image/png">
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.18/dist/sweetalert2.min.css">
 
      <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
      <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
@@ -47,9 +48,11 @@
        }
        </style>
  </head>
+ 
  <body>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.18/dist/sweetalert2.all.min.js"></script>
 
-  <nav class="navbar navbar-expand-lg navbar-dark " style="background-color: #FF69B4;">
+    <nav class="navbar navbar-expand-lg navbar-dark " style="background-color: #FF69B4;">
       <div class="container">
         <a class="navbar-brand" href="/booking/index.php">
           <img src="/booking/assets/img/logo.png" alt="Logo"  class="d-inline-block align-top me-2">
@@ -85,22 +88,17 @@
                                <li class="nav-item"><a class="nav-link" href="/booking/views/admin/user_management.php">จัดการผู้ใช้งาน</a></li>
                                <li class="nav-item"><a class="nav-link" href="/booking/views/admin/settings.php">ตั้งค่าระบบ</a></li>
                                </ul>
-                      <?php endif;?>
-                      
+                      <?php endif; ?>
+
                      <li class="nav-item"><a class="nav-link" href="/booking/controllers/auth_controller.php?logout=true">ออกจากระบบ</a></li>
                  <?php else: ?>
                     </li>
                       <li class="nav-item"><a class="nav-link" href="/booking/views/auth/login.php">เข้าสู่ระบบ</a></li>
                       <li class="nav-item"><a class="nav-link" href="/booking/views/auth/register.php">สมัครสมาชิก</a></li>
-                 <?php endif;?>
+                 <?php endif; ?>
              </ul>
          </div>
       </div>
-  </nav>
-  <div class="container mt-4">
-     <?php if (isset($_SESSION['success_message'])): ?>
-            <div class="alert alert-success"><?php echo $_SESSION['success_message'];unset($_SESSION['success_message']); ?></div>
-       <?php endif;?>
-         <?php if (isset($_SESSION['error_message'])): ?>
-             <div class="alert alert-danger"><?php echo $_SESSION['error_message'];unset($_SESSION['error_message']); ?></div>
-       <?php endif;?>
+    </nav>
+
+    <div class="container mt-4">
