@@ -83,6 +83,7 @@
                                <li class="nav-item"><a class="nav-link" href="/booking/views/rooms/list.php">ห้องประชุม</a></li>
                                <li class="nav-item"><a class="nav-link" href="/booking/views/equipments/list.php">อุปกรณ์</a></li>
                                <li class="nav-item"><a class="nav-link" href="/booking/views/admin/user_management.php">จัดการผู้ใช้งาน</a></li>
+                               <li class="nav-item"><a class="nav-link" href="/booking/views/admin/settings.php">ตั้งค่าระบบ</a></li>
                                </ul>
                       <?php endif;?>
                       

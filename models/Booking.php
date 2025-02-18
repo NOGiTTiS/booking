@@ -9,14 +9,14 @@ class Booking
         $this->pdo = $pdo;
     }
 
-    public function createBooking($userId, $roomId, $subject, $department, $phone, $attendees, $startTime, $endTime, $equipmentIds = [], $note = null, $roomLayoutImage = null)
+    public function createBooking($userId, $roomId, $subject, $department, $phone, $attendees, $startTime, $endTime, $equipmentIds = [], $note = null, $roomLayoutImage = null, $status = 'pending')
     {
         try {
             // Begin transaction to ensure atomicity
             $this->pdo->beginTransaction();
 
-            $stmt = $this->pdo->prepare("INSERT INTO bookings (user_id, room_id, subject, department, phone, attendees, start_time, end_time, note, room_layout_image) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$userId, $roomId, $subject, $department, $phone, $attendees, $startTime, $endTime, $note, $roomLayoutImage]);
+            $stmt = $this->pdo->prepare("INSERT INTO bookings (user_id, room_id, subject, department, phone, attendees, start_time, end_time, note, room_layout_image, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt->execute([$userId, $roomId, $subject, $department, $phone, $attendees, $startTime, $endTime, $note, $roomLayoutImage, $status]);
 
             $bookingId = $this->pdo->lastInsertId();
 
@@ -28,6 +28,7 @@ class Booking
 
             // Commit transaction
             $this->pdo->commit();
+
             return $bookingId;
         } catch (PDOException $e) {
             // Rollback transaction if any error occurs
@@ -112,10 +113,11 @@ class Booking
         }
     }
 
-    public function getAllBookings($where = []) {
+    public function getAllBookings($where = [])
+    {
         $sql = "
-            SELECT 
-                b.*, 
+            SELECT
+                b.*,
                 u.first_name AS user_first_name,
                 u.last_name AS user_last_name,
                 r.name AS room_name,
@@ -129,28 +131,28 @@ class Booking
             LEFT JOIN booking_equipments be ON b.id = be.booking_id
             LEFT JOIN equipments e ON be.equipment_id = e.id ";
         $conditions = [];
-       $params = [];
+        $params     = [];
         foreach ($where as $key => $value) {
-          if (strpos($key, '>=') !== false) {
+            if (strpos($key, '>=') !== false) {
                 $conditions[] = str_replace('>=', '', $key) . " >= ?";
-                $params[] = $value;
-            }else if(strpos($key, '<=') !== false) {
+                $params[]     = $value;
+            } else if (strpos($key, '<=') !== false) {
                 $conditions[] = str_replace('<=', '', $key) . " <= ?";
-               $params[] = $value;
-           }else{
-                 $conditions[] = "$key = ?";
-                 $params[] = $value;
-           }
-       }
-    
-       if (!empty($conditions)) {
-           $sql .= " WHERE " . implode(" AND ", $conditions);
+                $params[]     = $value;
+            } else {
+                $conditions[] = "$key = ?";
+                $params[]     = $value;
+            }
         }
-      $sql .= " GROUP BY b.id ORDER BY b.id DESC";
-    
-      $stmt = $this->pdo->prepare($sql);
-      $stmt->execute($params);
-       return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (! empty($conditions)) {
+            $sql .= " WHERE " . implode(" AND ", $conditions);
+        }
+        $sql .= " GROUP BY b.id ORDER BY b.id DESC";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getBookingSummaryByRoom($where = [])
@@ -165,20 +167,20 @@ class Booking
                  WHERE b.status = 'approved'
            ";
         $conditions = [];
-        $params = [];
+        $params     = [];
         foreach ($where as $key => $value) {
             if (strpos($key, '>=') !== false) {
                 $conditions[] = str_replace('>=', '', $key) . " >= ?";
-                $params[] = $value;
+                $params[]     = $value;
             } else if (strpos($key, '<=') !== false) {
                 $conditions[] = str_replace('<=', '', $key) . " <= ?";
-                $params[] = $value;
+                $params[]     = $value;
             } else {
                 $conditions[] = "$key = ?";
-                $params[] = $value;
+                $params[]     = $value;
             }
         }
-        if (!empty($conditions)) {
+        if (! empty($conditions)) {
             $sql .= " AND " . implode(" AND ", $conditions);
         }
         $sql .= " GROUP BY r.id ORDER BY booking_count DESC";
@@ -201,20 +203,20 @@ class Booking
         ";
 
         $conditions = [];
-        $params = [];
+        $params     = [];
         foreach ($where as $key => $value) {
             if (strpos($key, '>=') !== false) {
                 $conditions[] = str_replace('>=', '', $key) . " >= ?";
-                $params[] = $value;
+                $params[]     = $value;
             } else if (strpos($key, '<=') !== false) {
                 $conditions[] = str_replace('<=', '', $key) . " <= ?";
-                $params[] = $value;
+                $params[]     = $value;
             } else {
                 $conditions[] = "$key = ?";
-                $params[] = $value;
+                $params[]     = $value;
             }
         }
-        if (!empty($conditions)) {
+        if (! empty($conditions)) {
             $sql .= " AND " . implode(" AND ", $conditions);
         }
         $sql .= " GROUP BY u.id ORDER BY booking_count DESC";
@@ -224,28 +226,27 @@ class Booking
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     }
-    public function approveBooking($id, $adminId) {
-        try{
-          $booking = $this->getBookingById($id);
-             if(!$booking)
-           {
-               throw new Exception("Booking not found");
-           }
-            if($this->checkBookingAvailability($booking['room_id'], $booking['start_time'], $booking['end_time'], $id))
-            {
-              throw new Exception("ไม่สามารถอนุมัติได้ เนื่องจากช่วงเวลาดังกล่าวไม่ว่าง กรุณาตรวจสอบ");
+    public function approveBooking($id, $adminId)
+    {
+        try {
+            $booking = $this->getBookingById($id);
+            if (! $booking) {
+                throw new Exception("Booking not found");
+            }
+            if ($this->checkBookingAvailability($booking['room_id'], $booking['start_time'], $booking['end_time'], $id)) {
+                throw new Exception("ไม่สามารถอนุมัติได้ เนื่องจากช่วงเวลาดังกล่าวไม่ว่าง กรุณาตรวจสอบ");
             }
             $stmt = $this->pdo->prepare("UPDATE bookings SET status = 'approved', admin_id = ? WHERE id = ?");
             $stmt->execute([$adminId, $id]);
-             return true;
-   
-         } catch (Exception $e) {
-           throw new Exception($e->getMessage());
-           return false;
-         }
+            return true;
+
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage());
+            return false;
+        }
     }
 
-    public function rejectBooking($id,$adminId)
+    public function rejectBooking($id, $adminId)
     {
         $stmt = $this->pdo->prepare("UPDATE bookings SET status = 'rejected', admin_id = ? WHERE id = ?");
         return $stmt->execute([$adminId, $id]);
@@ -280,11 +281,11 @@ class Booking
             $sql = str_replace("AND id != :exclude_booking_id", "", $sql);
         }
 
-        $stmt = $this->pdo->prepare($sql);
+        $stmt   = $this->pdo->prepare($sql);
         $params = [
-            ':room_id' => $roomId,
+            ':room_id'    => $roomId,
             ':start_time' => $startTime,
-            ':end_time' => $endTime,
+            ':end_time'   => $endTime,
         ];
 
         if ($excludeBookingId !== null) {

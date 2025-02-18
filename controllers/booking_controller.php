@@ -16,18 +16,19 @@ $equipmentModel = new Equipment($pdo);
 $userModel      = new User($pdo);
 
 // Function to send Telegram message
-function sendTelegramMessage($message, $chatId, $botToken) {
-    $url = "https://api.telegram.org/bot" . $botToken . "/sendMessage";
+function sendTelegramMessage($message, $chatId, $botToken)
+{
+    $url  = "https://api.telegram.org/bot" . $botToken . "/sendMessage";
     $data = [
-        'chat_id' => $chatId,
-        'text' => $message,
-        'parse_mode' => 'HTML' // ใช้ HTML formatting ได้
+        'chat_id'    => $chatId,
+        'text'       => $message,
+        'parse_mode' => 'HTML', // ใช้ HTML formatting ได้
     ];
 
     $options = [
-        CURLOPT_URL => $url,
-        CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => $data,
+        CURLOPT_URL            => $url,
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => $data,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_SSL_VERIFYPEER => false, // ไม่แนะนำให้ใช้ใน production จริง, ควรตั้งค่า SSL ให้ถูกต้อง
     ];
@@ -40,13 +41,18 @@ function sendTelegramMessage($message, $chatId, $botToken) {
         error_log("Telegram API Error: " . curl_error($ch));
     } else {
         $responseData = json_decode($response, true);
-        if ($responseData === null || !$responseData['ok']) {
+        if ($responseData === null || ! $responseData['ok']) {
             error_log("Telegram API Response Error: " . print_r($responseData, true));
         }
     }
     curl_close($ch);
 }
 
+// Get default booking status from settings
+$stmt = $pdo->prepare("SELECT setting_value FROM settings WHERE setting_name = 'default_booking_status'");
+$stmt->execute();
+$result        = $stmt->fetch(PDO::FETCH_ASSOC);
+$defaultStatus = isset($result['setting_value']) ? $result['setting_value'] : 'pending';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['create'])) {
@@ -86,35 +92,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 exit();
             }
 
-            if ($bookingId = $bookingModel->createBooking($userId, $roomId, $subject, $department, $phone, $attendees, $startTime, $endTime, $equipmentIds, $note, $roomLayoutImage)) {
+            if ($bookingId = $bookingModel->createBooking($userId, $roomId, $subject, $department, $phone, $attendees, $startTime, $endTime, $equipmentIds, $note, $roomLayoutImage, $defaultStatus)) {
                 $_SESSION['success_message'] = "จองห้องสำเร็จ กรุณารอการอนุมัติ" . $message;
                 header('Location: ../views/bookings/list.php');
-                // Send Telegram notification to admin                
-                $room = $roomModel->getRoomById($roomId);
+                // Send Telegram notification to admin
+                $room     = $roomModel->getRoomById($roomId);
                 $roomName = $room ? $room['name'] : "Unknown Room"; // Handle case where room might not exist
-                $link = "/booking/views/bookings/list.php";
-                $message = urlencode("มีการจองห้องประชุมใหม่\n"
-                        . "รหัสการจอง: " . $bookingId . "\n"
-                        . "หัวข้อ: " . htmlspecialchars($subject) . "\n"  // Use htmlspecialchars for safety
-                        . "ห้อง: " . htmlspecialchars($roomName) . "\n"
-                        . "เวลา: " . htmlspecialchars($startTime) . " - " . htmlspecialchars($endTime) . "\n"
-                        . "ผู้จอง: " . htmlspecialchars($_SESSION['username']) . "\n"
-                        . "ฝ่าย/งาน: " . htmlspecialchars($department) . "\n"
-                        . "เบอร์โทร: " . htmlspecialchars($phone) . "\n"
-                        . "จำนวนผู้เข้าใช้: " . htmlspecialchars($attendees) . "\n"
-                       . "หมายเหตุ: " . htmlspecialchars($note));
+                $link     = "/booking/views/bookings/list.php";
+                $message  = urlencode("มีการจองห้องประชุมใหม่\n"
+                    . "รหัสการจอง: " . $bookingId . "\n"
+                    . "หัวข้อ: " . htmlspecialchars($subject) . "\n" // Use htmlspecialchars for safety
+                    . "ห้อง: " . htmlspecialchars($roomName) . "\n"
+                    . "เวลา: " . htmlspecialchars($startTime) . " - " . htmlspecialchars($endTime) . "\n"
+                    . "ผู้จอง: " . htmlspecialchars($_SESSION['username']) . "\n"
+                    . "ฝ่าย/งาน: " . htmlspecialchars($department) . "\n"
+                    . "เบอร์โทร: " . htmlspecialchars($phone) . "\n"
+                    . "จำนวนผู้เข้าใช้: " . htmlspecialchars($attendees) . "\n"
+                    . "หมายเหตุ: " . htmlspecialchars($note));
 
-                $adminChatId = '-4765744081';  // *** เปลี่ยนเป็น Chat ID ของแอดมิน ***
-                $botToken = '7760198064:AAFQFHyMPNoZv99ovHp6Jl5FfSZbYN_WDtI';  // *** เปลี่ยนเป็น Bot Token ของคุณ ***
-                $url="https://api.telegram.org/bot$botToken/sendMessage?text=$message&chat_id=$adminChatId";
-                $ch=curl_init();
-                curl_setopt($ch,CURLOPT_URL,$url);
-                curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
-                $result=curl_exec($ch);
+                $adminChatId = '-4765744081';                                    // *** เปลี่ยนเป็น Chat ID ของแอดมิน ***
+                $botToken    = '7760198064:AAFQFHyMPNoZv99ovHp6Jl5FfSZbYN_WDtI'; // *** เปลี่ยนเป็น Bot Token ของคุณ ***
+                $url         = "https://api.telegram.org/bot$botToken/sendMessage?text=$message&chat_id=$adminChatId";
+                $ch          = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                $result = curl_exec($ch);
                 curl_close($ch);
                 echo "<pre>";
                 print_r($result);
-              exit();
+                exit();
 
             } else {
                 $_SESSION['error_message'] = "ไม่สามารถจองห้องได้ กรุณาลองใหม่อีกครั้ง";
