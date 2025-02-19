@@ -168,7 +168,9 @@
                      <label for="remember" >จดจำฉัน</label>
                </div>
              <button type="submit" class="btn btn-primary" name="login">เข้าสู่ระบบ</button>
-
+             <div class="register-link">
+                   <a href="/booking/views/auth/forgot_password.php">ลืมรหัสผ่าน?</a>
+              </div>
                <div class="register-link">
                    <a href="/booking/views/auth/register.php">ลงทะเบียน</a>
               </div>

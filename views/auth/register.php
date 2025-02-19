@@ -1,5 +1,5 @@
 <?php
-session_start();
+    session_start();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -185,7 +185,7 @@ session_start();
    </div>
 </div>
 
-<?php if(isset($_SESSION['success_message'])): ?>
+<?php if (isset($_SESSION['success_message'])): ?>
         <script>
             Swal.fire({
                 icon: 'success',
@@ -197,7 +197,7 @@ session_start();
         </script>
     <?php unset($_SESSION['success_message']); ?>
 <?php endif; ?>
-  <?php if(isset($_SESSION['error_message'])): ?>
+<?php if (isset($_SESSION['error_message'])): ?>
        <script>
             Swal.fire({
                 icon: 'error',
@@ -206,7 +206,7 @@ session_start();
              });
         </script>
      <?php unset($_SESSION['error_message']); ?>
- <?php endif; ?>
+<?php endif; ?>
 
 </body>
 </html>

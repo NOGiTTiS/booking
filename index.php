@@ -45,6 +45,7 @@ if (isset($_SESSION['user_id'])) {
             <p>กรุณาเข้าสู่ระบบเพื่อทำการจองห้องประชุม</p>
               <a href="/booking/views/auth/login.php" class="btn btn-primary mb-3">เข้าสู่ระบบ</a>
               <a href="/booking/views/auth/register.php" class="btn btn-primary mb-3">สมัครสมาชิก</a>
+              <a href="/booking/views/auth/forgot_password.php" class="btn btn-primary mb-3">ลืมรหัสผ่าน</a>
           <?php endif;?>
       </div>
 </div>
