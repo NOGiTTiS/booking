@@ -98,9 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Send Telegram notification to admin
                 $room     = $roomModel->getRoomById($roomId);
                 $roomName = $room ? $room['name'] : "Unknown Room"; // Handle case where room might not exist
-                //$host = $_SERVER['DOCUMENT_ROOT'] . '/booking/views/bookings/list.php';
-                //$host = 'http://61.19.112.82/booking/views/bookings/list.php';
-                $host = 'http://' . $_SERVER['DOCUMENT_ROOT'] . '/booking/views/bookings/list.php';
+                $host = 'http://' . $_SERVER['HTTP_HOST'] . '/booking/views/bookings/list.php';
                 $link     = "<a href='http://$host'</a>";
                 $message  = urlencode("มีการจองห้องประชุมใหม่\n"
                     . "รหัสการจอง: " . $bookingId . "\n"
