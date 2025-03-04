@@ -60,6 +60,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($user && $userModel->verifyPassword($password, $user['password'])) {
             $_SESSION['user_id']  = $user['id'];
             $_SESSION['username'] = $user['username'];
+            $_SESSION['first_name'] = $user['first_name'];
+            $_SESSION['last_name'] = $user['last_name'];
             $_SESSION['role']     = $user['role'];
 
             if ($rememberMe) {

@@ -1,52 +1,52 @@
 <?php
-session_start();
-include 'views/layouts/header.php';
-require_once 'config/database.php';
-require_once 'models/Booking.php';
-require_once 'models/Room.php';
-require_once 'models/User.php';
+    session_start();
+    include 'views/layouts/header.php';
+    require_once 'config/database.php';
+    require_once 'models/Booking.php';
+    require_once 'models/Room.php';
+    require_once 'models/User.php';
 
-$bookingModel = new Booking($pdo);
-$roomModel = new Room($pdo);
-$bookings = $bookingModel->getAllBookings(['status' => 'approved']);
-$rooms = $roomModel->getAllRooms();
-$roomColors = [];
-foreach ($rooms as $room) {
-    $roomColors[$room['id']] = $room['color'];
-}
-$events = [];
+    $bookingModel = new Booking($pdo);
+    $roomModel    = new Room($pdo);
+    $bookings     = $bookingModel->getAllBookings(['status' => 'approved']);
+    $rooms        = $roomModel->getAllRooms();
+    $roomColors   = [];
+    foreach ($rooms as $room) {
+        $roomColors[$room['id']] = $room['color'];
+    }
+    $events = [];
 
-foreach ($bookings as $booking) {
-    $events[] = [
-        'id' => $booking['id'],
-        'title' => $booking['subject'] . ' (' . $booking['room_name'] . ')',
-        'start' => date('Y-m-d\TH:i:s', strtotime($booking['start_time'])),
-        'end' => date('Y-m-d\TH:i:s', strtotime($booking['end_time'])),
-        'color' => isset($roomColors[$booking['room_id']]) ? $roomColors[$booking['room_id']] : '#378006',
-    ];
-}
-$userModel = new User($pdo);
-$user = null;
-if (isset($_SESSION['user_id'])) {
-    $user = $userModel->getUserById($_SESSION['user_id']);
-}
+    foreach ($bookings as $booking) {
+        $events[] = [
+            'id'    => $booking['id'],
+            'title' => $booking['subject'] . ' (' . $booking['room_name'] . ')',
+            'start' => date('Y-m-d\TH:i:s', strtotime($booking['start_time'])),
+            'end'   => date('Y-m-d\TH:i:s', strtotime($booking['end_time'])),
+            'color' => isset($roomColors[$booking['room_id']]) ? $roomColors[$booking['room_id']] : '#378006',
+        ];
+    }
+    $userModel = new User($pdo);
+    $user      = null;
+    if (isset($_SESSION['user_id'])) {
+        $user = $userModel->getUserById($_SESSION['user_id']);
+    }
 ?>
 
 <div class="row">
   <div class="col-md-12">
           <?php if (isset($_SESSION['user_id'])): ?>
-              <?php if ($user): ?>
-                    <p>สวัสดี, <?php echo $user['first_name'] . ' ' . $user['last_name']; ?>!</p>
+<?php if ($user): ?>
+                    <p>สวัสดี,<?php echo $user['first_name'] . ' ' . $user['last_name']; ?>!</p>
                 <?php else: ?>
                   <p>สวัสดี!</p>
-              <?php endif;?>
+              <?php endif; ?>
             <a href="/booking/views/bookings/create.php" class="btn btn-primary mb-3">จองห้องประชุม</a>
         <?php else: ?>
             <p>กรุณาเข้าสู่ระบบเพื่อทำการจองห้องประชุม</p>
               <a href="/booking/views/auth/login.php" class="btn btn-primary mb-3">เข้าสู่ระบบ</a>
               <a href="/booking/views/auth/register.php" class="btn btn-primary mb-3">สมัครสมาชิก</a>
               <a href="/booking/views/auth/forgot_password.php" class="btn btn-primary mb-3">ลืมรหัสผ่าน</a>
-          <?php endif;?>
+          <?php endif; ?>
       </div>
 </div>
 <div class="row">
@@ -61,7 +61,7 @@ if (isset($_SESSION['user_id'])) {
                      center: 'title',
                      right: 'month,agendaWeek,agendaDay'
                  },
-                events: <?php echo json_encode($events); ?>,
+                events:                        <?php echo json_encode($events); ?>,
                    eventClick: function(calEvent, jsEvent, view) {
                       var bookingId = calEvent.id;
                          $.ajax({
@@ -115,8 +115,8 @@ if (isset($_SESSION['user_id'])) {
            <div class="mt-3">
                 <strong>คำอธิบาย:</strong><br>
               <?php foreach ($rooms as $room): ?>
-                    <span class="badge" style="background-color: <?php echo $room['color']; ?>"><?php echo $room['name']; ?></span>
-               <?php endforeach;?>
+                    <span class="badge" style="background-color:<?php echo $room['color']; ?>"><?php echo $room['name']; ?></span>
+               <?php endforeach; ?>
           </div>
         </div>
     </div>
@@ -131,4 +131,4 @@ if (isset($_SESSION['user_id'])) {
             </div>
         </div>
     </div>
-    <?php include 'views/layouts/footer.php';?>
+    <?php include 'views/layouts/footer.php'; ?>

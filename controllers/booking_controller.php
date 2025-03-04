@@ -99,13 +99,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $room     = $roomModel->getRoomById($roomId);
                 $roomName = $room ? $room['name'] : "Unknown Room"; // Handle case where room might not exist
                 $host = 'http://' . $_SERVER['HTTP_HOST'] . '/booking/views/bookings/list.php';
-                $link     = "<a href='http://$host'</a>";
+                //$link     = "<a href='http://$host'</a>";
                 $message  = urlencode("มีการจองห้องประชุมใหม่\n"
                     . "รหัสการจอง: " . $bookingId . "\n"
                     . "หัวข้อ: " . htmlspecialchars($subject) . "\n" // Use htmlspecialchars for safety
                     . "ห้อง: " . htmlspecialchars($roomName) . "\n"
                     . "เวลา: " . htmlspecialchars($startTime) . " - " . htmlspecialchars($endTime) . "\n"
-                    . "ผู้จอง: " . htmlspecialchars($_SESSION['username']) . "\n"
+                    . "ผู้จอง: " . htmlspecialchars($_SESSION['first_name']) . " " . htmlspecialchars($_SESSION['last_name']) . "\n"
                     . "ฝ่าย/งาน: " . htmlspecialchars($department) . "\n"
                     . "เบอร์โทร: " . htmlspecialchars($phone) . "\n"
                     . "จำนวนผู้เข้าใช้: " . htmlspecialchars($attendees) . "\n"
