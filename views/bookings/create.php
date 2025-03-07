@@ -11,7 +11,7 @@ $rooms = $roomModel->getAllRooms();
 $equipments = $equipmentModel->getAllEquipments();
 ?>
 <h2>จองห้องประชุม</h2>
-<form action="../../controllers/booking_controller.php" method="post" enctype="multipart/form-data">
+<form action="../../controllers/booking_controller.php" method="post" enctype="multipart/form-data" onsubmit="return validateTime()">
     <div class="mb-3">
         <label for="room_id" class="form-label">ห้องประชุม</label>
         <select class="form-select" id="room_id" name="room_id" required>
@@ -80,6 +80,17 @@ $equipments = $equipmentModel->getAllEquipments();
                 endTimeInput.setAttribute('min', minDateTime);
             }
      });
+
+     function validateTime() {
+        var startTime = document.getElementById('start_time').value;
+        var endTime = document.getElementById('end_time').value;
+
+        if (startTime >= endTime) {
+             alert('เวลาสิ้นสุดต้องมากกว่าเวลาเริ่ม');
+             return false;
+        }
+        return true;
+   }
  </script>
 
 <?php include '../layouts/footer.php';?>
